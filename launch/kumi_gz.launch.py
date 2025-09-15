@@ -65,7 +65,7 @@ def launch_setup(context, *args, **kwargs):
                     package='gazebo_ros',
                     executable='spawn_entity.py',
                     name='spawn_my_entity',
-                    arguments=['-file', urdf_path, '-z', '5', '-entity', 'kumi'],
+                    arguments=['-file', urdf_path, '-z', '0', '-entity', 'kumi'],
                     output='screen',
                 )
             ]

@@ -1,0 +1,108 @@
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Float64MultiArray
+from sensor_msgs.msg import JointState
+import tkinter as tk
+from threading import Thread
+import numpy as np
+
+class PIDMonitor(Node):
+    def __init__(self):
+        super().__init__('pid_monitor')
+
+        # Subscriber PID (valori calcolati e guadagni)
+        self.sub_pid = self.create_subscription(
+            Float64MultiArray,
+            '/PID_received',
+            self.pid_callback,
+            10
+        )
+        # Subscriber target positions
+        self.sub_target = self.create_subscription(
+            Float64MultiArray,
+            '/target_positions',
+            self.target_callback,
+            10
+        )
+        # Subscriber stato reale giunti
+        self.sub_state = self.create_subscription(
+            JointState,
+            '/joint_states',
+            self.state_callback,
+            10
+        )
+
+        # Stato iniziale
+        n_joints = 6
+        self.kp = np.zeros(n_joints)
+        self.ki = np.zeros(n_joints)
+        self.kd = np.zeros(n_joints)
+        self.P = np.zeros(n_joints)
+        self.I = np.zeros(n_joints)
+        self.D = np.zeros(n_joints)
+        self.targets = np.zeros(n_joints)
+        self.positions = np.zeros(n_joints)
+
+        # GUI Tkinter
+        self.root = tk.Tk()
+        self.root.title("PID Monitor")
+        self.labels = []
+
+        for j in range(n_joints):
+            lbl = tk.Label(self.root,
+                           text=f"Joint {j} | Kp=0.00 Ki=0.00 Kd=0.00 | "
+                                f"P=0.00 I=0.00 D=0.00 | "
+                                f"Target=0.00 | Pos=0.00",
+                           font=("Arial", 12), anchor="w", justify="left")
+            lbl.pack(fill="x")
+            self.labels.append(lbl)
+
+        self.update_gui()
+
+    # Callback ricezione PID
+    def pid_callback(self, msg):
+        data = np.array(msg.data)
+        if len(data) == 36:
+            self.kp = data[0:6]
+            self.ki = data[6:12]
+            self.kd = data[12:18]
+            self.P = data[18:24]
+            self.I = data[24:30]
+            self.D = data[30:36]
+        else:
+            self.get_logger().warn("PID_received con lunghezza inattesa")
+
+    # Callback target positions
+    def target_callback(self, msg):
+        arr = np.array(msg.data)
+        if len(arr) == 6:
+            self.targets = arr
+
+    # Callback posizioni reali
+    def state_callback(self, msg):
+        joint_names = msg.name
+        joint_positions = np.array(msg.position)
+        joint_indices = [joint_names.index(name) for name in joint_names[:6]]
+        self.positions = joint_positions[joint_indices]
+
+    # Aggiorna GUI
+    def update_gui(self):
+        for j in range(6):
+            txt = (f"Joint {j} | "
+                   f"Kp={self.kp[j]:.2f} Ki={self.ki[j]:.2f} Kd={self.kd[j]:.2f} | "
+                   f"P={self.P[j]:.2f} I={self.I[j]:.2f} D={self.D[j]:.2f} | "
+                   f"Target={self.targets[j]:.2f} | "
+                   f"Pos={self.positions[j]:.2f}")
+            self.labels[j].config(text=txt)
+
+        self.root.after(200, self.update_gui)  # refresh 200 ms
+
+    def spin_in_thread(self):
+        t = Thread(target=rclpy.spin, args=(self,))
+        t.daemon = True
+        t.start()
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = PIDMonitor()
+    node.spin_in_t

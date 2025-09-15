@@ -3,7 +3,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import JointState
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 import numpy as np
 
 class PIDTunerGUI(Node):
@@ -11,8 +11,8 @@ class PIDTunerGUI(Node):
         super().__init__('pid_tuner_gui')
 
         # ROS Publishers
-        self.pub_target = self.create_publisher(Float64MultiArray, '/target_positions', 10)
-        self.pub_pid = self.create_publisher(Float64MultiArray, '/pid_params', 10)
+        self.pub_target = self.create_publisher(Float64MultiArray, '/target_positions', 100)
+        self.pub_pid = self.create_publisher(Float64MultiArray, '/pi_gains', 100)
 
         # ROS Subscriber
         self.sub_joint_state = self.create_subscription(
@@ -21,12 +21,12 @@ class PIDTunerGUI(Node):
 
         # Dati giunti
         self.joint_names = [
-            'front_sh', 'back_sh', 'front_ank',
+            'front_sh', 'front_knee', 'front_ank',
             'back_sh', 'back_knee', 'back_ank'
         ]
         self.current_positions = np.zeros(6)
         self.target_positions = np.zeros(6)
-        self.pid_params = np.array([[0.0, 0.0, 0.0] for _ in range(6)])  # P,I,D per giunto
+        self.pid_params = np.zeros((6,3))  # P,I,D per giunto
 
         # QSettings per salvataggio automatico
         self.settings = QtCore.QSettings("MyOrg", "PIDTunerGUI")
@@ -41,7 +41,7 @@ class PIDTunerGUI(Node):
 
         # --- Selettore giunto ---
         self.joint_selector = QtWidgets.QComboBox()
-        self.joint_selector.addItems(self.joint_names + ['All'])
+        self.joint_selector.addItems(self.joint_names)
         self.joint_selector.currentIndexChanged.connect(self.update_joint_selection)
         self.selected_joint = 0
         self.main_layout.addWidget(QtWidgets.QLabel("Select Joint:"))
@@ -84,45 +84,23 @@ class PIDTunerGUI(Node):
         self.spin_target.setSingleStep(1)
         self.spin_target.setValue(0)
         self.spin_target.valueChanged.connect(self.update_target_from_spinbox)
-        self.label_error = QtWidgets.QLabel("Err: 0%")
         layout_target.addWidget(QtWidgets.QLabel("Target"))
         layout_target.addWidget(self.slider_target)
         layout_target.addWidget(self.spin_target)
-        layout_target.addWidget(self.label_error)
         self.main_layout.addLayout(layout_target)
-
-        # --- Radial gauges per joint ---
-        self.dials = []
-        self.dial_labels = []
-        self.dial_value_labels = []
-        dial_layout = QtWidgets.QHBoxLayout()
-        for jname in self.joint_names:
-            dial_widget = QtWidgets.QVBoxLayout()
-            dial = QtWidgets.QDial()
-            dial.setMinimum(-180)
-            dial.setMaximum(180)
-            dial.setNotchesVisible(True)
-            dial.setEnabled(False)
-            label_name = QtWidgets.QLabel(jname)
-            label_name.setAlignment(QtCore.Qt.AlignCenter)
-            label_value = QtWidgets.QLabel("0.0°")
-            label_value.setAlignment(QtCore.Qt.AlignCenter)
-            dial_widget.addWidget(dial)
-            dial_widget.addWidget(label_name)
-            dial_widget.addWidget(label_value)
-            dial_layout.addLayout(dial_widget)
-            self.dials.append(dial)
-            self.dial_labels.append(label_name)
-            self.dial_value_labels.append(label_value)
-        self.main_layout.addLayout(dial_layout)
 
         # --- Timer GUI ---
         self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update_all)
-        self.timer.start(50)
+        self.timer.timeout.connect(self.update_gui)
+        self.timer.start(50)  # GUI refresh a 20Hz
+
+        # --- Timer Pubblicazione ROS a 100Hz ---
+        self.pub_timer = QtCore.QTimer()
+        self.pub_timer.timeout.connect(self.publish_all)
+        self.pub_timer.start(10)  # 10ms = 100Hz
 
         self.window.show()
-        self.window.closeEvent = self.closeEvent  # intercetta chiusura finestra
+        self.window.closeEvent = self.closeEvent
 
     # --- ROS callback ---
     def joint_state_callback(self, msg: JointState):
@@ -132,76 +110,50 @@ class PIDTunerGUI(Node):
     # --- Update sliders/spinbox ---
     def update_joint_selection(self):
         self.selected_joint = self.joint_selector.currentIndex()
-        idx = self.selected_joint if self.selected_joint < 6 else 0
         for i in range(3):
-            self.sliders_pid[i].setValue(int(self.pid_params[idx,i]*100))
-            self.spin_pid[i].setValue(self.pid_params[idx,i])
-        self.slider_target.setValue(int(self.target_positions[idx]*180/np.pi))
-        self.spin_target.setValue(self.target_positions[idx]*180/np.pi)
+            self.sliders_pid[i].setValue(int(self.pid_params[self.selected_joint,i]*100))
+            self.spin_pid[i].setValue(self.pid_params[self.selected_joint,i])
+        self.slider_target.setValue(int(self.target_positions[self.selected_joint]*180/np.pi))
+        self.spin_target.setValue(self.target_positions[self.selected_joint]*180/np.pi)
 
     def update_pid_from_slider(self):
         for i in range(3):
             val = self.sliders_pid[i].value()/100
-            if self.selected_joint == 6:
-                self.pid_params[:,i] = val
-            else:
-                self.pid_params[self.selected_joint,i] = val
+            self.pid_params[self.selected_joint,i] = val
             self.spin_pid[i].setValue(val)
 
     def update_pid_from_spinbox(self):
         for i in range(3):
             val = self.spin_pid[i].value()
-            if self.selected_joint == 6:
-                self.pid_params[:,i] = val
-            else:
-                self.pid_params[self.selected_joint,i] = val
+            self.pid_params[self.selected_joint,i] = val
             self.sliders_pid[i].setValue(int(val*100))
 
     def update_target_from_slider(self):
         val_rad = self.slider_target.value()*np.pi/180
-        if self.selected_joint == 6:
-            self.target_positions[:] = val_rad
-        else:
-            self.target_positions[self.selected_joint] = val_rad
+        self.target_positions[self.selected_joint] = val_rad
         self.spin_target.setValue(float(self.slider_target.value()))
 
     def update_target_from_spinbox(self):
         val_rad = self.spin_target.value() * np.pi / 180
-        if self.selected_joint == 6:
-            self.target_positions[:] = val_rad
-        else:
-            self.target_positions[self.selected_joint] = val_rad
+        self.target_positions[self.selected_joint] = val_rad
         self.slider_target.setValue(int(self.spin_target.value()))
 
-    # --- Aggiorna display e pubblica ---
-    def update_all(self):
-        for i, dial in enumerate(self.dials):
-            val_deg = int(self.current_positions[i] * 180 / np.pi)
-            val_deg = max(dial.minimum(), min(dial.maximum(), val_deg))
-            dial.setValue(val_deg)
-            error = abs(self.target_positions[i] - self.current_positions[i])
-            color = QtGui.QColor(0,255,0) if error < 0.05 else QtGui.QColor(255,0,0)
-            self.dial_value_labels[i].setText(f"{val_deg:.1f}°")
-            self.dial_value_labels[i].setStyleSheet(f"color: {color.name()};")
+    # --- Aggiorna solo GUI ---
+    def update_gui(self):
+        # Aggiorna eventuali valori GUI (ad es. slider) se vuoi
+        pass
 
-        idx = self.selected_joint if self.selected_joint < 6 else 0
-        target_deg = self.target_positions[idx] * 180 / np.pi
-        current_deg = self.current_positions[idx] * 180 / np.pi
-        error_pct = abs(target_deg - current_deg)/abs(target_deg)*100 if target_deg !=0 else 0
-        self.label_error.setText(f"Err: {error_pct:.1f}%")
+    # --- Pubblica tutti i joint a 100Hz ---
+    def publish_all(self):
+        # PID
+        pid_msg = Float64MultiArray()
+        pid_msg.data = self.pid_params.flatten().tolist()
+        self.pub_pid.publish(pid_msg)
 
-        self.publish_pid()
-        self.publish_target()
-
-    def publish_pid(self):
-        msg = Float64MultiArray()
-        msg.data = self.pid_params.flatten().tolist()
-        self.pub_pid.publish(msg)
-
-    def publish_target(self):
-        msg = Float64MultiArray()
-        msg.data = self.target_positions.tolist()
-        self.pub_target.publish(msg)
+        # Target positions
+        target_msg = Float64MultiArray()
+        target_msg.data = self.target_positions.tolist()
+        self.pub_target.publish(target_msg)
 
     # --- Salvataggio e caricamento ---
     def save_settings(self):

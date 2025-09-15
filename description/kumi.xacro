@@ -9,7 +9,7 @@
     <xacro:property name="foot_len" value="0.25" />
     <xacro:property name="toll" value="0.005" />
     <xacro:property name="mass" value="0.3" />
-    <xacro:property name="joint_friction" value="0.5" />
+    <xacro:property name="joint_friction" value="0.2" />
 
 
     <ros2_control name="KumiHardware" type="system">
@@ -58,7 +58,16 @@
         <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
             <parameters>/home/andreas/dev_ws/install/kumi/share/kumi/config/kumi_effort_cntr_cnfg.yaml</parameters>  
         </plugin>
-    </gazebo>s
+    </gazebo>
+
+    <link name="world" />
+
+
+    <joint name="world_to_body" type="fixed">
+        <origin xyz="0 0 5" rpy="0 0 0"/>
+        <parent link="world"/>
+        <child link="body"/>
+    </joint>
 
 
     <link name="body">
@@ -89,8 +98,8 @@
         <parent link="body"/>
         <child link="front_leg"/>
         <axis xyz="0 -1 0"/>
-        <limit lower="-0.5" upper="0.5" velocity="5" effort="2"/> 
-        <dynamics damping="0.1" friction="${joint_friction}"/>
+        <limit lower="-0.7" upper="1" velocity="5" effort="6"/> 
+        <dynamics damping="0.5" friction="${joint_friction}"/>
     </joint>
 
     <link name="front_leg">
@@ -121,7 +130,7 @@
         <parent link="front_leg"/>
         <child link="front_leg_d"/>
         <axis xyz="0 0 1"/>
-        <limit lower="-0.5" upper="0.5" velocity="5" effort="2"/> 
+        <limit lower="0.0" upper="0.0" velocity="5" effort="2"/> 
         <dynamics damping="10.0" friction="10.0"/>
     </joint>
 
@@ -218,7 +227,7 @@
         <parent link="back_leg"/>
         <child link="back_leg_d"/>
         <axis xyz="0 0 1"/>
-        <limit lower="-0.5" upper="0.5" velocity="5" effort="2"/> 
+        <limit lower="0.0" upper="0.0" velocity="5" effort="2"/> 
         <dynamics damping="10.0" friction="10.0"/>
     </joint>
 
