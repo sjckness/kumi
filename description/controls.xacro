@@ -1,0 +1,51 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="robot">
+
+    <ros2_control name="KumiHardware" type="system">
+        <hardware>
+            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </hardware>
+        <joint name="front_sh">
+            <command_interface name="effort"/>
+            <state_interface name="effort"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="back_sh">
+            <command_interface name="effort"/>
+            <state_interface name="effort"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="front_knee">
+            <command_interface name="effort"/>
+            <state_interface name="effort"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="back_knee">
+            <command_interface name="effort"/>
+            <state_interface name="effort"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="front_ank">
+            <command_interface name="effort"/>
+            <state_interface name="effort"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="back_ank">
+            <command_interface name="effort"/>
+            <state_interface name="effort"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+    </ros2_control> 
+    
+    <gazebo>
+        <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+            <parameters>/home/andreas/dev_ws/install/kumi/share/kumi/config/kumi_effort_cntr_cnfg.yaml</parameters>  
+        </plugin>
+    </gazebo>
+
+</robot>
