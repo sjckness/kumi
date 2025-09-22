@@ -132,9 +132,8 @@ def generate_launch_description():
             period=1.0,
             actions=[
             ExecuteProcess(
-                cmd=['gazebo', '--verbose', 
-                     world_path,
-                    '-s', 'libgazebo_ros_factory.so'
+                cmd=['gz', 'sim', '--verbose', 
+                     world_path
                 ],
                 output='screen',
             )
@@ -142,12 +141,6 @@ def generate_launch_description():
             ]
         ),
         #run an arbitrary py function with actions ore nodes to launch
-        OpaqueFunction(function=launch_setup),
+        #OpaqueFunction(function=launch_setup),
 
-        Node(
-            package='kumi',
-            executable='com_calculator',
-            name='com_calculator',
-            parameters=[urdf_file]
-        )
     ])
