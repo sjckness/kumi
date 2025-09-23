@@ -3,27 +3,36 @@ from rclpy.node import Node
 from sensor_msgs.msg import JointState
 import numpy as np
 import pinocchio as pin
-
-
+import xacro
+import os
+from pathlib import Path
+from ament_index_python.packages import get_package_share_directory
 
 class ComCalculator(Node):
     def __init__(self):
         super().__init__('com_calculator')
 
-        # Parametro URDF
-        self.declare_parameter('urdf_file', '')
-        self.urdf_path = self.get_parameter('urdf_file').get_parameter_value().string_value
-        if not self.urdf_path:
-            self.get_logger().error("Parametro 'urdf_file' non fornito!")
-            raise RuntimeError("Parametro 'urdf_file' mancante")
+        # Ottieni il percorso dell'XACRO dal pacchetto ROS 2
+        pkg_share = get_package_share_directory('kumi')
+        xacro_file = os.path.join(pkg_share, 'description', 'kumi.xacro')
+
+        if not os.path.exists(xacro_file):
+            self.get_logger().error(f"File XACRO non trovato: {xacro_file}")
+            raise FileNotFoundError(f"{xacro_file} non esiste")
+
+        # Genera URDF temporaneo
+        urdf_path = '/tmp/kumi.urdf'
+        doc = xacro.process_file(xacro_file)
+        with open(urdf_path, 'w') as f:
+            f.write(doc.toxml())
 
         # Carica modello Pinocchio
-        self.robot_model, _, _ = pin.buildModelsFromUrdf(self.urdf_path)
+        self.robot_model = pin.buildModelFromUrdf(urdf_path)
         self.robot_data = self.robot_model.createData()
 
         self.latest_joint_msg = None
 
-        # Subscriber
+        # Subscriber a /joint_states
         self.subscription = self.create_subscription(
             JointState,
             '/joint_states',
@@ -31,24 +40,24 @@ class ComCalculator(Node):
             10
         )
 
-        # Timer (20 Hz)
-        self.timer = self.create_timer(10, self.timer_callback)
+        # Timer a 20 Hz
+        self.timer = self.create_timer(0.05, self.timer_callback)
 
-    def joint_state_callback(self, msg):
+    def joint_state_callback(self, msg: JointState):
         self.latest_joint_msg = msg
 
     def timer_callback(self):
         if self.latest_joint_msg is None:
             return
 
-        # Crea configurazione q inizialmente nulla
+        # Mapping giunti: nome -> indice in Pinocchio
+        joint_index = {name: i for i, name in enumerate(self.robot_model.names[1:])}  # skip "universe"
         q = np.zeros(self.robot_model.nq)
 
-        # Riempi i valori in base ai giunti
-        for i, joint in enumerate(self.robot_model.names[1:]):  # salta "universe"
-            if joint in self.latest_joint_msg.name:
-                idx_msg = self.latest_joint_msg.name.index(joint)
-                q[i] = self.latest_joint_msg.position[idx_msg]
+        # Aggiorna configurazione dai joint_states
+        for name, pos in zip(self.latest_joint_msg.name, self.latest_joint_msg.position):
+            if name in joint_index:
+                q[joint_index[name]] = pos
 
         # Calcola centro di massa
         com = pin.centerOfMass(self.robot_model, self.robot_data, q)
@@ -57,10 +66,13 @@ class ComCalculator(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = ComCalculator()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
-

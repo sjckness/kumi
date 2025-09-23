@@ -1,16 +1,5 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="kumi">
-   
-    
-    <link name="world" />
-
-
-    <joint name="world_to_body" type="fixed">
-        <origin xyz="0 0 5" rpy="0 0 0"/>
-        <parent link="world"/>
-        <child link="body"/>
-    </joint>
-
 
     <link name="body">
         <visual>
@@ -19,7 +8,7 @@
                 <box size="${lenght} ${thikness} ${thikness}" />
             </geometry>
             <material name="green">
-                <color rgba="0.2 1 0.2 1"/>
+                <color rgba="1 0 0 1"/>
             </material>
         </visual>
         <collision>
@@ -40,7 +29,7 @@
         <parent link="body"/>
         <child link="front_leg"/>
         <axis xyz="0 -1 0"/>
-        <limit lower="-0.7" upper="1" velocity="5" effort="6"/> 
+        <limit lower="-0.85" upper="${pi - 0.85}" velocity="5" effort="6"/> 
         <dynamics damping="0.5" friction="${joint_friction}"/>
     </joint>
 
@@ -51,7 +40,7 @@
                 <box size="${thikness} ${thikness} ${leg_len/2}" />
             </geometry>
             <material name="orange">
-                <color rgba="0.2 1 0.2 1"/>
+                <color rgba="0.7 0.7 0 1"/>
             </material>
         </visual>
         <collision>
@@ -83,7 +72,7 @@
                 <box size="${thikness} ${thikness} ${leg_len/2}" />
             </geometry>
             <material name="orange">
-                <color rgba="0.2 1 0.2 1"/>
+                <color rgba="0.7 0.7 0 1"/>
             </material>
         </visual>
         <collision>
@@ -104,7 +93,7 @@
         <parent link="front_leg_d"/>
         <child link="front_foot"/>
         <axis xyz="0 -1 0"/>
-        <limit lower="-0.5" upper="0.5" velocity="5" effort="2"/> 
+        <limit lower="-0.85" upper="0.85" velocity="5" effort="2"/> 
         <dynamics damping="0.1" friction="${joint_friction}"/>
     </joint>
 
@@ -115,7 +104,7 @@
                 <box size="${foot_len} ${foot_len} ${thikness/2}" />
             </geometry>
             <material name="white">
-                <color rgba="0.2 1 0.2 1"/>
+                <color rgba="0 0.5 0.8 1"/>
             </material>
         </visual>
         <collision>
@@ -136,7 +125,7 @@
         <parent link="body"/>
         <child link="back_leg"/>
         <axis xyz="0 -1 0"/>
-        <limit lower="-0.5" upper="0.5" velocity="5" effort="2"/> 
+        <limit lower="${-pi + 0.85}" upper="0.85" velocity="5" effort="2"/> 
         <dynamics damping="0.1" friction="${joint_friction}"/>
     </joint>
 
@@ -148,7 +137,7 @@
                 <box size="${thikness} ${thikness} ${leg_len/2}" />
             </geometry>
             <material name="orange">
-                <color rgba="0.2 1 0.2 1"/>
+                <color rgba="0.7 0.7 0 1"/>
             </material>
         </visual>
         <collision>
@@ -181,7 +170,7 @@
                 <box size="${thikness} ${thikness} ${leg_len/2}" />
             </geometry>
             <material name="orange">
-                <color rgba="0.2 1 0.2 1"/>
+                <color rgba="0.7 0.7 0 1"/>
             </material>
         </visual>
         <collision>
@@ -202,7 +191,7 @@
         <parent link="back_leg_d"/>
         <child link="back_foot"/>
         <axis xyz="0 -1 0"/>
-        <limit lower="-0.5" upper="0.5" velocity="5" effort="2"/> 
+        <limit lower="-0.85" upper="0.85" velocity="5" effort="2"/> 
         <dynamics damping="0.1" friction="${joint_friction}"/>
     </joint>
 
@@ -214,7 +203,7 @@
                 <box size="${foot_len} ${foot_len} ${thikness/2}" />
             </geometry>
             <material name="white">
-                <color rgba="0.2 1 0.2 1"/>
+                <color rgba="0 0.5 0.8 1"/>
             </material>
         </visual>
         <collision>

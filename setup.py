@@ -35,11 +35,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
     'console_scripts': [
-        'controller = kumi.kumi_controller:main',
         'PID_effort_controller = kumi.PID_effort_controller:main',
         'com_calculator = kumi.com_calculator:main',
         'PID_tuner_GUI = kumi.PID_tuner_GUI:main',
-        'visualizer = kumi.visualizer_node:main',
     ]
 },
 

@@ -2,6 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="kumi">
    
     <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/variables.xacro" />
+    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/controls.xacro" />
     <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/kumi_core.xacro" />
 
 </robot>

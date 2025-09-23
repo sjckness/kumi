@@ -81,7 +81,8 @@ class PIDController(Node):
         )
 
         # Timer a 5ms (~200 Hz)
-        self.timer = self.create_timer(0.005, self.control_loop)
+        self.timer = self.create_timer(0.01, self.control_loop)
+        self.timer = self.create_timer(1.0, self.print_data)
 
     # --- Callback Subscriber ---
     def joint_state_callback(self, msg):
@@ -99,13 +100,13 @@ class PIDController(Node):
             self.kp[:] = pid_matrix[:,0]
             self.ki[:] = pid_matrix[:,1]
             self.kd[:] = pid_matrix[:,2]
-            self.get_logger().info(f"Updated PID params: P={self.kp}, I={self.ki}, D={self.kd}")
+            #self.get_logger().info(f"Updated PID params: P={self.kp}, I={self.ki}, D={self.kd}")
 
     def target_callback(self, msg):
         data = np.array(msg.data)
         if len(data) == 6:
             self.target_positions[:] = data
-            self.get_logger().info(f"Updated target positions: {self.target_positions}")
+            #self.get_logger().info(f"Updated target positions: {self.target_positions}")
 
     # --- Controllo ---
     def control_loop(self):
@@ -153,8 +154,12 @@ class PIDController(Node):
         # Aggiorna previous_target_positions
         self.previous_target_positions[:] = self.target_positions
 
-        self.get_logger().info(f"Efforts: {efforts}")
+        
+
+    def print_data(self):
+        self.get_logger().info(f"Efforts: {self.last_efforts}")
         self.get_logger().info(f"Target positions: {self.target_positions}")
+
 
 def main(args=None):
     rclpy.init(args=args)

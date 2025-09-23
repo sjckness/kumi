@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="kumi">
 
+    <xacro:property name="pi" value="3.14159" />
+    <xacro:property name="ang_low_lim" value="0.85" />
+    <xacro:property name="ang_up_lim" value="4" />
     <xacro:property name="thikness" value="0.15" />
     <xacro:property name="lenght" value="0.5" />
     <xacro:property name="leg_len" value="0.4" />

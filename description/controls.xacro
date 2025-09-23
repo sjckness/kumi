@@ -43,7 +43,7 @@
     </ros2_control> 
     
     <gazebo>
-        <plugin name="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
             <parameters>/home/andreas/dev_ws/install/kumi/share/kumi/config/kumi_effort_cntr_cnfg.yaml</parameters>  
         </plugin>
     </gazebo>

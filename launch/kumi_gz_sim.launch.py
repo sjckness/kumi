@@ -71,18 +71,59 @@ def generate_launch_description():
         arguments=['-string', robot_desc,
                    '-x', '0.0',
                    '-y', '0.0',
-                   '-z', '0.07',
+                   '-z', '1.0',
                    '-R', '0.0',
                    '-P', '0.0',
                    '-Y', '0.0',
-                   '-name', 'fws_robot',
+                   '-name', 'kumi',
                    '-allow_renaming', 'false'],
     )
 
+    load_joint_state_broadcaster= ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'joint_state_broadcaster'],
+        output='screen'
+    )
+
+    load_joint_effort_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'effort_joint_controller'],
+        output='screen'
+    )
+
+    # Bridge
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
+        output='screen'
+    )
+
+    com_calculator = Node(
+        package='kumi',
+        executable='com_calculator',
+        output='screen'
+
+    )
+
     return LaunchDescription([
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=gz_spawn_entity,
+                on_exit=[load_joint_state_broadcaster],
+            )
+        ),
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+               target_action=load_joint_state_broadcaster,
+               on_exit=[load_joint_effort_controller],
+            )
+        ),
         gazebo_resource_path,
         arguments,
         gazebo,
         node_robot_state_publisher,
+        bridge,
         gz_spawn_entity,
+        com_calculator,
     ])
