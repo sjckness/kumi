@@ -20,17 +20,15 @@ def generate_launch_description():
     pkg_share= os.path.join(
         get_package_share_directory('kumi'))
 
-    # Set gazebo sim resource path
+    pkg_share = get_package_share_directory('kumi')
+
     gazebo_resource_path = SetEnvironmentVariable(
         name='GZ_SIM_RESOURCE_PATH',
-        value=[
-            os.path.join(pkg_share, 'worlds'), ':' +
-            str(Path(os.path.join(pkg_share, 'description')).parent.resolve())
-            ]
-        )
+        value=os.path.join(pkg_share, 'worlds')
+    )
 
     arguments = LaunchDescription([
-                DeclareLaunchArgument('world', default_value='empty',
+                DeclareLaunchArgument('world', default_value='compton',
                           description='Gz sim World'),
            ]
     )
@@ -70,7 +68,7 @@ def generate_launch_description():
         output='screen',
         arguments=['-string', robot_desc,
                    '-x', '0.0',
-                   '-y', '0.0',
+                   '-y', '1.0',
                    '-z', '1.0',
                    '-R', '0.0',
                    '-P', '0.0',
@@ -87,11 +85,10 @@ def generate_launch_description():
 
     load_joint_effort_controller = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
-             'effort_joint_controller'],
+             'multi_joint_trajectory_controller'],
         output='screen'
     )
 
-    # Bridge
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',

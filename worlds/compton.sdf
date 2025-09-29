@@ -10,11 +10,7 @@
     </physics>
 
     <ambient>0.2 0.5 0.5 1</ambient>
-    <background>0.7 0.7 0.7 1</background>
-
-    <include>
-      <uri>model://sun</uri>
-    </include>
+    <background>0.2 0.2 0.2 1</background>
 
     <model name="custom_ground">
       <static>true</static>
@@ -31,8 +27,8 @@
           <surface>
             <friction>
               <ode>
-                <mu>2</mu>
-                <mu2>2</mu2>
+                <mu>0.6</mu>
+                <mu2>0.4</mu2>
                 <kp>100000</kp> 
                 <kd>1</kd>
               </ode>
@@ -50,7 +46,7 @@
           <material>
             <script>
               <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Gray</name>
+              <name>Gazebo/White</name>
             </script>
           </material>
         </visual>

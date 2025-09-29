@@ -38,6 +38,8 @@ setup(
         'PID_effort_controller = kumi.PID_effort_controller:main',
         'com_calculator = kumi.com_calculator:main',
         'PID_tuner_GUI = kumi.PID_tuner_GUI:main',
+        'traj = kumi.kumi_trajectory_controller:main',
+        'console_input = kumi.console_input:main',
     ]
 },
 

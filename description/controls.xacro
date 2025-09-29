@@ -5,38 +5,32 @@
             <plugin>gz_ros2_control/GazeboSimSystem</plugin>
         </hardware>
         <joint name="front_sh">
-            <command_interface name="effort"/>
-            <state_interface name="effort"/>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-        </joint>
-        <joint name="back_sh">
-            <command_interface name="effort"/>
-            <state_interface name="effort"/>
+            <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
         <joint name="front_knee">
-            <command_interface name="effort"/>
-            <state_interface name="effort"/>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-        </joint>
-        <joint name="back_knee">
-            <command_interface name="effort"/>
-            <state_interface name="effort"/>
+            <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
         <joint name="front_ank">
-            <command_interface name="effort"/>
-            <state_interface name="effort"/>
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="back_sh">
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="back_knee">
+            <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
         <joint name="back_ank">
-            <command_interface name="effort"/>
-            <state_interface name="effort"/>
+            <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
@@ -44,7 +38,7 @@
     
     <gazebo>
         <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
-            <parameters>/home/andreas/dev_ws/install/kumi/share/kumi/config/kumi_effort_cntr_cnfg.yaml</parameters>  
+            <parameters>/home/andreas/dev_ws/install/kumi/share/kumi/config/kumi_control_config.yaml</parameters>  
         </plugin>
     </gazebo>
 

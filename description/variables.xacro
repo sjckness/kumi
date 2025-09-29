@@ -7,9 +7,9 @@
     <xacro:property name="thikness" value="0.15" />
     <xacro:property name="lenght" value="0.5" />
     <xacro:property name="leg_len" value="0.4" />
-    <xacro:property name="foot_len" value="0.25" />
+    <xacro:property name="foot_len" value="0.5" />
     <xacro:property name="toll" value="0.005" />
     <xacro:property name="mass" value="0.3" />
-    <xacro:property name="joint_friction" value="0.5" />
+    <xacro:property name="joint_friction" value="0.2" />
 
 </robot>

@@ -1,7 +1,7 @@
 ---
 controller_manager:
   ros__parameters:
-    update_rate: 1000
+    update_rate: 100
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
       update_rate: 10
@@ -11,14 +11,14 @@ controller_manager:
 multi_joint_trajectory_controller:
   ros__parameters:
     joints:
-      - front_sh
-      - front_knee
-      - front_ank
-      - back_sh
-      - back_knee
-      - back_ank
+    - front_sh
+    - front_knee
+    - front_ank
+    - back_sh
+    - back_knee
+    - back_ank
     command_interfaces:
-      - position
+    - position
     state_interfaces:
-      - position
-      - velocity
+    - position
+    - velocity
