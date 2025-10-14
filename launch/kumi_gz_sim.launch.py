@@ -47,7 +47,7 @@ def generate_launch_description():
 
     xacro_file = os.path.join(pkg_share,
                               'description/xacro',
-                              'kumi_mesh.xacro')
+                              'kumi_mesh_effort.xacro')
 
     doc = xacro.process_file(xacro_file, mappings={'use_sim' : 'true'})
 
@@ -95,9 +95,15 @@ def generate_launch_description():
         output='screen'
     )
 
-    load_joint_effort_controller = ExecuteProcess(
+    load_joint_traj_controller = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'multi_joint_trajectory_controller'],
+        output='screen'
+    )
+
+    load_joint_effort_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'joint_group_effort_controller'],
         output='screen'
     )
 
@@ -121,6 +127,12 @@ def generate_launch_description():
 
     )
 
+    pid_effort_controller = Node(
+        package='kumi',
+        executable='PID_effort_controller',
+        output='screen'
+    )
+
     return LaunchDescription([
         RegisterEventHandler(
             event_handler=OnProcessExit(
@@ -134,6 +146,7 @@ def generate_launch_description():
                on_exit=[load_joint_effort_controller],
             )
         ),
+
         gazebo_resource_path,
         arguments,
         gazebo,
@@ -141,5 +154,7 @@ def generate_launch_description():
         bridge,
         gz_spawn_entity,
         foxglove_bridge,
+        pid_effort_controller]
         #com_calculator,
-    ])
+    )
+        

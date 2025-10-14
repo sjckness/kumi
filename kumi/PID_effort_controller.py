@@ -1,172 +1,158 @@
+import numpy as np
 import rclpy
-import os
-from launch_ros.substitutions import FindPackageShare
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
-import numpy as np
-import csv
-import math
-from trajectory_msgs.msg import JointTrajectoryPoint
-from builtin_interfaces.msg import Duration
 
-pkg_share = FindPackageShare("kumi").find("kumi")
-traj_file = os.path.join(pkg_share, 'cntr_files', 'targets.csv')
 
 class PIDController(Node):
     def __init__(self):
-        super().__init__('pid_controller')
+        super().__init__('pid_effort_controller')
 
-        # Parametri
-        self.declare_parameter('joints', ['front_sh',  'front_ank',
-                                          'back_sh', 'back_ank'])
-        self.declare_parameter('kp', [1.45] * 6)
-        self.declare_parameter('ki', [2.0] * 6)
-        self.declare_parameter('kd', [0.0] * 6)
-        self.declare_parameter('max_effort', 6.0)
-        self.declare_parameter('max_delta', 1.0)
-        self.declare_parameter('use_pid', True)
+        # Allow external launch files to set / use simulation time.
+        self.declare_parameter('use_sim_time', False)
 
-        self.joints = self.get_parameter('joints').get_parameter_value().string_array_value
-        self.kp = np.array(self.get_parameter('kp').get_parameter_value().double_array_value)
-        self.ki = np.array(self.get_parameter('ki').get_parameter_value().double_array_value)
-        self.kd = np.array(self.get_parameter('kd').get_parameter_value().double_array_value)
-        self.max_effort = self.get_parameter('max_effort').get_parameter_value().double_value
-        self.max_delta = self.get_parameter('max_delta').get_parameter_value().double_value
-        self.use_pid = self.get_parameter('use_pid').get_parameter_value().bool_value
+        # Ordered joint list; adjust to match the hardware controller.
+        self.joints = ['front_sh', 'front_ank', 'back_sh', 'back_ank']
+        self.num_joints = len(self.joints)
 
-        # Stato dei giunti
-        self.target_positions = np.zeros(6)
-        self.last_positions = np.zeros(6)
-        self.last_velocities = np.zeros(6)
-        self.integrals = np.zeros(6)
-        self.last_efforts = np.zeros(6)
-        self.previous_target_positions = np.copy(self.target_positions)
+        # Gains entered directly in this file (Nm/rad).
+        self.kp = np.array([1.45, 1.45, 1.45, 1.45], dtype=float)
+        self.ki = np.array([2.0, 2.0, 2.0, 2.0], dtype=float)
+        self.kd = np.array([0.0, 0.0, 0.0, 0.0], dtype=float)
 
-        # Subscriber giunti
-        self.subscriber = self.create_subscription(
+        # Effort saturation limits.
+        self.max_effort = 10.0
+        self.max_delta = 1.0
+
+        # Internal state variables.
+        self.control_period = 0.01  # 100 Hz
+        self.target_positions = np.zeros(self.num_joints)
+        self.last_positions = np.zeros(self.num_joints)
+        self.integrals = np.zeros(self.num_joints)
+        self.last_efforts = np.zeros(self.num_joints)
+        self.previous_target_positions = np.zeros(self.num_joints)
+        self.prev_errors = np.zeros(self.num_joints)
+        self.joint_indices = None
+
+        # ROS interfaces.
+        self.subscription_joint_state = self.create_subscription(
             JointState,
             '/joint_states',
             self.joint_state_callback,
-            100
+            100,
         )
-
-        # Subscriber PID e target positions
-        self.sub_pid_gains = self.create_subscription(
-            Float64MultiArray,
-            '/pi_gains',
-            self.pid_gains_callback,
-            100
-        )
-
-        self.sub_target = self.create_subscription(
+        self.subscription_target = self.create_subscription(
             Float64MultiArray,
             '/target_positions',
             self.target_callback,
-            100
+            100,
         )
-
-        # Publisher effort
-        self.publisher = self.create_publisher(
+        self.command_publisher = self.create_publisher(
             Float64MultiArray,
-            '/effort_joint_controller/commands',
-            100
+            '/joint_group_effort_controller/commands',
+            100,
         )
-
-        # Publisher PID data
-        self.publisher_PID_data = self.create_publisher(
+        self.pid_data_publisher = self.create_publisher(
             Float64MultiArray,
             '/PID_data',
-            100
+            100,
         )
 
-        # Timer a 5ms (~200 Hz)
-        self.timer = self.create_timer(0.01, self.control_loop)
-        self.timer = self.create_timer(1.0, self.print_data)
+        self.control_timer = self.create_timer(self.control_period, self.control_loop)
+        self.print_timer = self.create_timer(1.0, self.print_data)
 
-    # --- Callback Subscriber ---
-    def joint_state_callback(self, msg):
-        joint_names = msg.name
-        joint_positions = np.array(msg.position)
-        joint_velocities = np.array(msg.velocity)
-        joint_indices = [joint_names.index(j) for j in self.joints]
-        self.last_positions = joint_positions[joint_indices]
-        self.last_velocities = joint_velocities[joint_indices]
+    # --- Callbacks ---
+    def joint_state_callback(self, msg: JointState) -> None:
+        if not msg.name:
+            return
 
-    def pid_gains_callback(self, msg):
-        data = np.array(msg.data)
-        if len(data) == 18:  # 6 joint * 3 parametri
-            pid_matrix = data.reshape((6,3))
-            self.kp[:] = pid_matrix[:,0]
-            self.ki[:] = pid_matrix[:,1]
-            self.kd[:] = pid_matrix[:,2]
-            #self.get_logger().info(f"Updated PID params: P={self.kp}, I={self.ki}, D={self.kd}")
+        if self.joint_indices is None:
+            name_to_index = {name: idx for idx, name in enumerate(msg.name)}
+            missing = [joint for joint in self.joints if joint not in name_to_index]
+            if missing:
+                self.get_logger().warning(
+                    f"JointState missing joints {missing}; waiting for complete data."
+                )
+                return
+            self.joint_indices = [name_to_index[joint] for joint in self.joints]
 
-    def target_callback(self, msg):
-        data = np.array(msg.data)
-        if len(data) == 6:
-            self.target_positions[:] = data
-            #self.get_logger().info(f"Updated target positions: {self.target_positions}")
+        positions = np.array(msg.position, dtype=float)
+        if positions.size <= max(self.joint_indices):
+            self.get_logger().warning("JointState array shorter than expected; skipping update.")
+            return
 
-    # --- Controllo ---
-    def control_loop(self):
-        # Reset integrale se cambia target
-        for j in range(6):
-            if self.target_positions[j] != self.previous_target_positions[j]:
-                self.integrals[j] = 0.0
+        self.last_positions = positions[self.joint_indices]
 
-        # Calcolo errori
+    def target_callback(self, msg: Float64MultiArray) -> None:
+        data = np.array(msg.data, dtype=float)
+        if data.size != self.num_joints:
+            self.get_logger().warning(
+                f"Expected {self.num_joints} target positions, received {data.size}."
+            )
+            return
+        self.target_positions = data
+
+    # --- Control loop ---
+    def control_loop(self) -> None:
+        if self.joint_indices is None:
+            return
+
+        # Reset integrator when target changes.
+        target_changed = self.target_positions != self.previous_target_positions
+        self.integrals[target_changed] = 0.0
+
         errors = self.target_positions - self.last_positions
-        self.integrals += errors
-        derivatives = self.last_velocities
+        self.integrals += errors * self.control_period
+        derivatives = (errors - self.prev_errors) / self.control_period
+        self.prev_errors = errors.copy()
 
-        self.p = self.kp * errors
-        self.i = self.ki * 0.01 * self.integrals
-        self.d = self.kd * derivatives
+        p_term = self.kp * errors
+        i_term = self.ki * self.integrals
+        d_term = self.kd * derivatives
 
-        efforts = self.p + self.i + self.d
+        efforts = p_term + i_term + d_term
         efforts = np.clip(efforts, -self.max_effort, self.max_effort)
 
-        delta_efforts = efforts - self.last_efforts
-        delta_efforts = np.clip(delta_efforts, -self.max_delta, self.max_delta)
-        efforts = self.last_efforts + delta_efforts
+        delta = efforts - self.last_efforts
+        delta = np.clip(delta, -self.max_delta, self.max_delta)
+        efforts = self.last_efforts + delta
         self.last_efforts = efforts
 
-        # --- Pubblica efforts ---
-        msg_effort = Float64MultiArray()
-        msg_effort.data = efforts.tolist()
-        self.publisher.publish(msg_effort)
+        command_msg = Float64MultiArray()
+        command_msg.data = efforts.tolist()
+        self.command_publisher.publish(command_msg)
 
-        # --- Pubblica PID data ---
-        msg_pid = Float64MultiArray()
-        msg_pid.data = np.concatenate([
-            self.kp,
-            self.ki,
-            self.kd,
-            self.p,
-            self.i,
-            self.d,
-            self.target_positions,
-            self.last_positions
-        ]).tolist()
-        self.publisher_PID_data.publish(msg_pid)
+        pid_msg = Float64MultiArray()
+        pid_msg.data = np.concatenate(
+            (p_term, i_term, d_term, self.target_positions, self.last_positions)
+        ).tolist()
+        self.pid_data_publisher.publish(pid_msg)
 
-        # Aggiorna previous_target_positions
-        self.previous_target_positions[:] = self.target_positions
+        self.previous_target_positions = self.target_positions.copy()
 
-        
+    def print_data(self) -> None:
+        efforts_str = ", ".join(self._format_effort(value) for value in self.last_efforts)
+        targets_str = ", ".join(f"{value:.3f}" for value in self.target_positions)
+        self.get_logger().info(f"Efforts: [{efforts_str}]")
+        self.get_logger().info(f"Target positions: [{targets_str}]")
 
-    def print_data(self):
-        self.get_logger().info(f"Efforts: {self.last_efforts}")
-        self.get_logger().info(f"Target positions: {self.target_positions}")
+    def _format_effort(self, value: float) -> str:
+        formatted = f"{value:.3f}"
+        if abs(value) >= self.max_effort:
+            return f"{self.ANSI_RED}{formatted}{self.ANSI_RESET}"
+        if abs(value) > 0.0:
+            return f"{self.ANSI_GREEN}{formatted}{self.ANSI_RESET}"
+        return formatted
 
 
-def main(args=None):
+def main(args=None) -> None:
     rclpy.init(args=args)
-    pid_controller = PIDController()
-    rclpy.spin(pid_controller)
-    pid_controller.destroy_node()
+    node = PIDController()
+    rclpy.spin(node)
+    node.destroy_node()
     rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

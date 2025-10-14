@@ -3,6 +3,12 @@
   <world name="compton">
     <gravity>0 0 -9.81</gravity>
 
+    <physics type="bullet" name="bullet">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+
     <light type="directional" name="sun">
       <cast_shadows>true</cast_shadows>
       <pose>0 0 10 0 0 0</pose>
