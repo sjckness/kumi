@@ -9,22 +9,12 @@
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
-        <joint name="front_knee">
-            <command_interface name="position"/>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-        </joint>
         <joint name="front_ank">
             <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
         <joint name="back_sh">
-            <command_interface name="position"/>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
-        </joint>
-        <joint name="back_knee">
             <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
@@ -39,6 +29,9 @@
     <gazebo>
         <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
             <parameters>/home/andreas/dev_ws/install/kumi/share/kumi/config/kumi_control_config.yaml</parameters>  
+        </plugin>
+        <plugin name="gz::sim::systems::WrenchVisualizer" filename="gz-sim-wrench-visualizer-system">
+            <topic>/wrench</topic>
         </plugin>
     </gazebo>
 

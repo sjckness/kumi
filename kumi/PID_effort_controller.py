@@ -18,8 +18,8 @@ class PIDController(Node):
         super().__init__('pid_controller')
 
         # Parametri
-        self.declare_parameter('joints', ['front_sh', 'front_knee', 'front_ank',
-                                          'back_sh', 'back_knee','back_ank'])
+        self.declare_parameter('joints', ['front_sh',  'front_ank',
+                                          'back_sh', 'back_ank'])
         self.declare_parameter('kp', [1.45] * 6)
         self.declare_parameter('ki', [2.0] * 6)
         self.declare_parameter('kd', [0.0] * 6)

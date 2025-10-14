@@ -2,6 +2,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float64MultiArray
+import math
 
 
 class UserInputPublisher(Node):
@@ -22,13 +23,15 @@ def main(args=None):
 
     try:
         while rclpy.ok():
-            user_input = input("Inserisci 4 numeri separati da spazi: ")
+            user_input = input("👉 Inserisci 4 angoli in gradi (separati da spazi): ")
             try:
-                numbers = [float(x) for x in user_input.strip().split()]
-                if len(numbers) == 6:
-                    node.publish_values(numbers)
+                numbers_deg = [float(x) for x in user_input.strip().split()]
+                if len(numbers_deg) == 4:
+                    # Conversione gradi → radianti
+                    numbers_rad = [math.radians(x) for x in numbers_deg]
+                    node.publish_values(numbers_rad)
                 else:
-                    print("⚠️ Devi inserire esattamente 6 numeri.")
+                    print("⚠️ Devi inserire esattamente 4 numeri.")
             except ValueError:
                 print("⚠️ Input non valido. Riprova.")
     except KeyboardInterrupt:

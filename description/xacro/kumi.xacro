@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="kumi">
+   
+    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/variables.xacro" />
+    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/controls.xacro" />
+    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/kumi_core.xacro" />
+
+</robot>

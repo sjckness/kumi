@@ -89,7 +89,7 @@
     </link>
 
     <joint name="front_ank" type="revolute">
-        <origin xyz="0 0 ${-leg_len/2 - thikness/2}" rpy="0 0 0"/>
+        <origin xyz="0 0 ${-leg_len/4 - thikness/4}" rpy="0 0 0"/>
         <parent link="front_leg_d"/>
         <child link="front_foot"/>
         <axis xyz="0 -1 0"/>
@@ -99,7 +99,7 @@
 
     <link name="front_foot">
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 ${-leg_len/4 - thikness/4}" rpy="0 0 0"/>
             <geometry>
                 <box size="${foot_len} ${foot_len} ${thikness/2}" />
             </geometry>
@@ -108,13 +108,13 @@
             </material>
         </visual>
         <collision>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 ${-leg_len/4 - thikness/4}" rpy="0 0 0"/>
             <geometry>
                 <box size="${foot_len-toll} ${foot_len-toll} ${thikness/2-toll}" />
             </geometry>
         </collision>
         <inertial>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 ${-leg_len/4 - thikness/4}" rpy="0 0 0"/>
             <mass value="0.15" />
             <inertia ixx="0.001135" ixy="0.0" ixz="0.0" iyy="0.001135" iyz="0.0" izz="0.002083" />
         </inertial>
@@ -187,7 +187,7 @@
     </link>
 
     <joint name="back_ank" type="revolute">
-        <origin xyz="0 0 ${-leg_len/2 - thikness/2}" rpy="0 0 0"/>
+        <origin xyz="0 0 ${-leg_len/4 - thikness/4}" rpy="0 0 0"/>
         <parent link="back_leg_d"/>
         <child link="back_foot"/>
         <axis xyz="0 -1 0"/>
@@ -198,7 +198,7 @@
 
     <link name="back_foot">
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 ${-leg_len/4 - thikness/4}" rpy="0 0 0"/>
             <geometry>
                 <box size="${foot_len} ${foot_len} ${thikness/2}" />
             </geometry>
@@ -207,13 +207,13 @@
             </material>
         </visual>
         <collision>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 ${-leg_len/4 - thikness/4}" rpy="0 0 0"/>
             <geometry>
                 <box size="${foot_len-toll} ${foot_len-toll} ${thikness/2-toll}" />
             </geometry>
         </collision>
         <inertial>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 ${-leg_len/4 - thikness/4}" rpy="0 0 0"/>
             <mass value="0.15" />
             <inertia ixx="0.001135" ixy="0.0" ixz="0.0" iyy="0.001135" iyz="0.0" izz="0.002083" />
         </inertial>

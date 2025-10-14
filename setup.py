@@ -15,7 +15,10 @@ setup(
         (f'share/{package_name}/launch', glob('launch/*.py')),
 
         # URDF / xacro
-        (f'share/{package_name}/description', glob('description/*.xacro')),
+        (f'share/{package_name}/description/xacro/', glob('description/xacro/*.xacro')),
+
+        # meshes
+        (f'share/{package_name}/description/mesh/', glob('description/mesh/*')),
         
         # Config files (YAML)
         (f'share/{package_name}/config', glob('config/*.yaml')),

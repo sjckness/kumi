@@ -46,8 +46,8 @@ def generate_launch_description():
              )
 
     xacro_file = os.path.join(pkg_share,
-                              'description',
-                              'kumi.xacro')
+                              'description/xacro',
+                              'kumi_mesh.xacro')
 
     doc = xacro.process_file(xacro_file, mappings={'use_sim' : 'true'})
 
@@ -62,14 +62,26 @@ def generate_launch_description():
         parameters=[params]
     )
 
+    foxglove_bridge = Node(
+        package='foxglove_bridge',
+        executable='foxglove_bridge',
+        name='foxglove_bridge',
+        output='screen',
+        parameters=[{
+            'port': 8765,
+            'address': '0.0.0.0',
+            'use_compression': False
+        }]
+    )
+
     gz_spawn_entity = Node(
         package='ros_gz_sim',
         executable='create',
         output='screen',
         arguments=['-string', robot_desc,
                    '-x', '0.0',
-                   '-y', '1.0',
-                   '-z', '1.0',
+                   '-y', '0.0',
+                   '-z', '0.5',
                    '-R', '0.0',
                    '-P', '0.0',
                    '-Y', '0.0',
@@ -92,7 +104,13 @@ def generate_launch_description():
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
-        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
+        arguments=[
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+            '/world/compton/model/kumi/joint/front_sh/sensor/front_sh_force_torque/wrench@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench',
+            '/world/compton/model/kumi/joint/front_ank/sensor/front_ank_force_torque/wrench@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench',
+            '/world/compton/model/kumi/joint/back_sh/sensor/back_sh_force_torque/wrench@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench',
+            '/world/compton/model/kumi/joint/back_ank/sensor/back_ank_force_torque/wrench@geometry_msgs/msg/WrenchStamped[gz.msgs.Wrench',
+        ],
         output='screen'
     )
 
@@ -122,5 +140,6 @@ def generate_launch_description():
         node_robot_state_publisher,
         bridge,
         gz_spawn_entity,
-        com_calculator,
+        foxglove_bridge,
+        #com_calculator,
     ])
