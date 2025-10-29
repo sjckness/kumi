@@ -1,3 +1,4 @@
+# yaml file path defined in kumi.xacro (controls.xacro)
 ---
 controller_manager:
   ros__parameters:
@@ -20,4 +21,4 @@ multi_joint_trajectory_controller:
     state_interfaces:
     - position
     - velocity
-    max_effort: 5000.0
+    max_effort: 50.0

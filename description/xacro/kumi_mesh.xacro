@@ -1,9 +1,6 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="kumi">
 
-    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/variables.xacro"/>
-    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/controls.xacro"/>
-
     <xacro:property name="mesh_scale" value="0.001 0.001 0.001"/>
     <xacro:property name="body_mesh" value="/home/andreas/dev_ws/src/kumi/description/mesh/body_v5.STL"/>
     <xacro:property name="leg_mesh" value="/home/andreas/dev_ws/src/kumi/description/mesh/leg_v2.stl"/>

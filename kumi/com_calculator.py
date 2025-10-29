@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+
+#------------------------------------------------------------------------#
+#   COM and ZMP computation 
+#   com published on /com topic
+#   ZMP published on /zmp topic
+#   both printed on the console
+#------------------------------------------------------------------------#
+
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PointStamped
@@ -15,7 +23,7 @@ class CoMZMPNode(Node):
         super().__init__('com_zmp_node')
 
         # Publisher
-        self.com_pub = self.create_publisher(PointStamped, '/center_of_mass', 10)
+        self.com_pub = self.create_publisher(PointStamped, '/com', 10)
         self.zmp_pub = self.create_publisher(PointStamped, '/zmp', 10)
 
         # TF buffer e listener

@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+
+#--------------------------------------------------------------------------------#
+#   console input of target position (front_sh | front_ank | back_sh | back-ank) 
+#   
+#   published on /target_positions
+#   
+#--------------------------------------------------------------------------------#
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float64MultiArray
@@ -23,7 +31,7 @@ def main(args=None):
 
     try:
         while rclpy.ok():
-            user_input = input("👉 Inserisci 4 angoli in gradi (separati da spazi): ")
+            user_input = input("Inserisci 4 angoli in deg (separati da spazi): ")
             try:
                 numbers_deg = [float(x) for x in user_input.strip().split()]
                 if len(numbers_deg) == 4:
@@ -31,9 +39,9 @@ def main(args=None):
                     numbers_rad = [math.radians(x) for x in numbers_deg]
                     node.publish_values(numbers_rad)
                 else:
-                    print("⚠️ Devi inserire esattamente 4 numeri.")
+                    print("numero input errato")
             except ValueError:
-                print("⚠️ Input non valido. Riprova.")
+                print("Input non valido")
     except KeyboardInterrupt:
         pass
     finally:

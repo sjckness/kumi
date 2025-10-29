@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+
+#--------------------------------------------------------------------------------#
+#   
+#   reads /target_positions and controls the trajectory
+#   
+#   published on /multi_joint_trajectory_controller/joint_trajectory
+#   
+#--------------------------------------------------------------------------------#
+
 import rclpy
 from rclpy.node import Node
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint

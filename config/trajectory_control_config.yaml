@@ -1,3 +1,4 @@
+# yaml file path defined in kumi.xacro (kumi_control.xacro)
 ---
 controller_manager:
   ros__parameters:

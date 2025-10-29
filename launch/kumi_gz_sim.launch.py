@@ -28,7 +28,7 @@ def generate_launch_description():
     )
 
     arguments = LaunchDescription([
-                DeclareLaunchArgument('world', default_value='compton',
+                DeclareLaunchArgument('world', default_value='stairs',     #name of the world.sdf file in /worlds folder
                           description='Gz sim World'),
            ]
     )
@@ -44,10 +44,10 @@ def generate_launch_description():
                     )
                 ]
              )
-
+    
     xacro_file = os.path.join(pkg_share,
                               'description/xacro',
-                              'kumi_mesh_effort.xacro')
+                              'kumi.xacro')
 
     doc = xacro.process_file(xacro_file, mappings={'use_sim' : 'true'})
 
@@ -62,6 +62,7 @@ def generate_launch_description():
         parameters=[params]
     )
 
+    #ros2 + gz - foxglove bridge for data plot and analisys
     foxglove_bridge = Node(
         package='foxglove_bridge',
         executable='foxglove_bridge',
@@ -74,6 +75,7 @@ def generate_launch_description():
         }]
     )
 
+    #spawn of the robot
     gz_spawn_entity = Node(
         package='ros_gz_sim',
         executable='create',
@@ -81,7 +83,7 @@ def generate_launch_description():
         arguments=['-string', robot_desc,
                    '-x', '0.0',
                    '-y', '0.0',
-                   '-z', '0.5',
+                   '-z', '0.5',     #spawn at .5 meters from the ground
                    '-R', '0.0',
                    '-P', '0.0',
                    '-Y', '0.0',
@@ -89,24 +91,26 @@ def generate_launch_description():
                    '-allow_renaming', 'false'],
     )
 
+    #joint state broadcaster for feedback on joints positions (no sensors used)
     load_joint_state_broadcaster= ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'joint_state_broadcaster'],
         output='screen'
     )
-
+    #multi joint trajectory controller 
     load_joint_traj_controller = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'multi_joint_trajectory_controller'],
         output='screen'
     )
-
+    #multi effort controller
     load_joint_effort_controller = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'joint_group_effort_controller'],
         output='screen'
     )
 
+    #ros2 - gz bridge
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
@@ -120,6 +124,7 @@ def generate_launch_description():
         output='screen'
     )
 
+    #simple center of mass computation
     com_calculator = Node(
         package='kumi',
         executable='com_calculator',
@@ -127,6 +132,7 @@ def generate_launch_description():
 
     )
 
+    #pid effort controller -> controlled by /target_position 
     pid_effort_controller = Node(
         package='kumi',
         executable='PID_effort_controller',
@@ -154,7 +160,8 @@ def generate_launch_description():
         bridge,
         gz_spawn_entity,
         foxglove_bridge,
-        pid_effort_controller]
+        pid_effort_controller
         #com_calculator,
+    ]
     )
         

@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="kumi">
    
     <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/variables.xacro" />
-    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/controls.xacro" />
-    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/kumi_core.xacro" />
+    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/effort_control.xacro" />
+    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/kumi_mesh.xacro" />
 
 </robot>
