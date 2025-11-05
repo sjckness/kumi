@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version="1.7">
-  <world name="compton">
+  <world name="stairs">
+
     <gravity>0 0 -9.81</gravity>
 
     <physics type="bullet" name="bullet">
@@ -24,6 +25,7 @@
     </light>
 
     <model name="ground_plane">
+      
       <static>true</static>
       <link name="ground_link">
         <collision name="ground_collision">

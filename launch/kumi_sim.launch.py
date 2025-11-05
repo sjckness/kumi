@@ -8,14 +8,22 @@ from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchD
 from launch.actions import RegisterEventHandler, SetEnvironmentVariable
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, TextSubstitution
 from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
+from launch_ros.substitutions import FindPackageShare 
 
 
 def generate_launch_description():
     # Launch Arguments
-    use_sim_time = LaunchConfiguration('use_sim_time', default=True)
+    sim_time_arg = DeclareLaunchArgument(
+        'use_sim_time', default_value='False',
+        description='Flag to enable use_sim_time'
+    )
+
+    world_arg = DeclareLaunchArgument(
+        'world', default_value='stairs.sdf',
+        description='Name of the Gazebo world file to load'
+    )
 
     pkg_share= os.path.join(
         get_package_share_directory('kumi'))
@@ -52,8 +60,24 @@ def generate_launch_description():
             os.path.join(pkg_ros_gz_sim, 'launch', 'gz_sim.launch.py')
         ),
         launch_arguments={
-            'gz_args': ['-r -v 4 empty.sdf']
+            'gz_args': ['-r -v 4 stairs.sdf']
         }.items()
+    )
+
+    ros_gz_sim = get_package_share_directory('ros_gz_sim')
+
+    gazebo_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(ros_gz_sim, 'launch', 'gz_sim.launch.py')
+        ),
+        launch_arguments={'gz_args': [PathJoinSubstitution([
+            pkg_share,
+            'worlds',
+            LaunchConfiguration('world')
+        ]),
+        #TextSubstitution(text=' -r -v -v1 --render-engine ogre --render-engine-gui-api-backend opengl')],
+        TextSubstitution(text=' -r -v 4')],
+        'on_exit_shutdown': 'true'}.items()
     )
     
     xacro_file = os.path.join(pkg_share,
@@ -73,17 +97,15 @@ def generate_launch_description():
         parameters=[params]
     )
 
-    #ros2 + gz - foxglove bridge for data plot and analisys
-    foxglove_bridge = Node(
-        package='foxglove_bridge',
-        executable='foxglove_bridge',
-        name='foxglove_bridge',
-        output='screen',
-        parameters=[{
-            'port': 8765,
-            'address': '0.0.0.0',
-            'use_compression': False
-        }]
+    #ros2 - gz bridge
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=[
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+            '/world/stairs/control@ros_gz_interfaces/msg/WorldControl[gz.msgs.WorldControl'
+        ],
+        output='screen'
     )
 
     #spawn of the robot
@@ -94,7 +116,7 @@ def generate_launch_description():
         arguments=['-string', robot_desc,
                    '-x', '0.0',
                    '-y', '0.0',
-                   '-z', '0.5',     #spawn at .5 meters from the ground
+                   '-z', '1.5',     #spawn at .5 meters from the ground
                    '-R', '0.0',
                    '-P', '0.0',
                    '-Y', '0.0',
@@ -102,74 +124,17 @@ def generate_launch_description():
                    '-allow_renaming', 'false'],
     )
 
-    #joint state broadcaster for feedback on joints positions (no sensors used)
-    load_joint_state_broadcaster= ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
-             'joint_state_broadcaster'],
-        output='screen'
-    )
-    #multi joint trajectory controller 
-    load_joint_traj_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
-             'multi_joint_trajectory_controller'],
-        output='screen'
-    )
-    #multi effort controller
-    load_joint_effort_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
-             'joint_group_effort_controller'],
-        output='screen'
-    )
-
-    #ros2 - gz bridge
-    bridge = Node(
-        package='ros_gz_bridge',
-        executable='parameter_bridge',
-        arguments=[
-            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'
-        ],
-        output='screen'
-    )
-
-    #simple center of mass computation
-    com_calculator = Node(
-        package='kumi',
-        executable='com_calculator',
-        output='screen'
-
-    )
-
-    #pid effort controller -> controlled by /target_position 
-    pid_effort_controller = Node(
-        package='kumi',
-        executable='PID_effort_controller',
-        output='screen'
-    )
-
     return LaunchDescription([
-        RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=gz_spawn_entity,
-                on_exit=[load_joint_state_broadcaster],
-            )
-        ),
-        RegisterEventHandler(
-            event_handler=OnProcessExit(
-               target_action=load_joint_state_broadcaster,
-               on_exit=[load_joint_effort_controller],
-            )
-        ),
-
+        sim_time_arg,
         gazebo_resource_path,
-        arguments,
+        world_arg,
+        #arguments,
         #gazebo,
-        gz_sim,
+        gazebo_cmd,
+        gz_spawn_entity,
+        #gz_sim,
         bridge,
         node_robot_state_publisher,
-        gz_spawn_entity,
-        foxglove_bridge,
-        pid_effort_controller
-        #com_calculator,
     ]
     )
 

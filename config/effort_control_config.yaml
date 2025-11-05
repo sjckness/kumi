@@ -1,24 +1,25 @@
-# yaml file path defined in kumi.xacro (controls.xacro)
+# yaml file path defined in kumi.xacro (effort_control.xacro)
 ---
 controller_manager:
   ros__parameters:
-    update_rate: 100
+    update_rate: 1000
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
       update_rate: 10
-    multi_joint_trajectory_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+    joint_group_effort_controller:
+      type: effort_controllers/JointGroupEffortController
+      update_rate: 100
 
-multi_joint_trajectory_controller:
+joint_group_effort_controller:
   ros__parameters:
     joints:
     - front_sh
     - front_ank
     - back_sh
     - back_ank
-    command_interfaces:
-    - position
     state_interfaces:
     - position
     - velocity
-    max_effort: 50.0
+    - effort
+    command_interfaces:
+    - effort

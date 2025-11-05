@@ -12,6 +12,9 @@
             <geometry>
                 <mesh filename="${body_mesh}" scale="${mesh_scale}"/>
             </geometry>
+            <material name="gray">
+                <color rgba="0 0 0 0.8"/>
+            </material>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -30,8 +33,8 @@
         <origin xyz="${-lenght/2} -0.006 0" rpy="0 0 0"/>
         <parent link="body"/>
         <child link="front_leg"/>
-        <axis xyz="0 1 0"/>
-        <limit lower="${-pi/4}" upper="${3*pi/4}" velocity="5" effort="1000"/>
+        <axis xyz="0 -1 0"/>
+        <limit lower="${-pi}" upper="${pi}" velocity="5" effort="1000"/>
         <dynamics damping="0.5" friction="${joint_friction}"/>
     </joint>
 
@@ -52,6 +55,9 @@
             <geometry>
                 <mesh filename="${leg_mesh}" scale="${mesh_scale}"/>
             </geometry>
+            <material name="gray">
+                <color rgba="0 0 0 0.8"/>
+            </material>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="0 ${-pi/2} 0"/>
@@ -70,8 +76,8 @@
         <origin xyz="0 0 ${-leg_len}" rpy="0 0 0"/>
         <parent link="front_leg"/>
         <child link="front_foot"/>
-        <axis xyz="0 1 0"/>
-        <limit lower="${-pi/2}" upper="${pi/2}" velocity="5" effort="1000"/>
+        <axis xyz="0 -1 0"/>
+        <limit lower="${-pi}" upper="${pi}" velocity="5" effort="1000"/>
         <dynamics damping="0.1" friction="${joint_friction}"/>
     </joint>
 
@@ -92,6 +98,9 @@
             <geometry>
                 <mesh filename="${foot_mesh}" scale="${mesh_scale}"/>
             </geometry>
+            <material name="green">
+                <color rgba="0 1 0 0.8"/>
+            </material>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="${pi/2} 0  ${-pi/2}"/>
@@ -111,7 +120,7 @@
         <parent link="body"/>
         <child link="back_leg"/>
         <axis xyz="0 -1 0"/>
-        <limit lower="${-pi/4}" upper="${3*pi/4}" velocity="5" effort="1000"/>
+        <limit lower="${-pi}" upper="${pi}" velocity="5" effort="1000"/>
         <dynamics damping="0.5" friction="${joint_friction}"/>
     </joint>
 
@@ -132,6 +141,9 @@
             <geometry>
                 <mesh filename="${leg_mesh}" scale="${mesh_scale}"/>
             </geometry>
+            <material name="gray">
+                <color rgba="0 0 0 0.8"/>
+            </material>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="0 ${-pi/2} ${pi}"/>
@@ -151,7 +163,7 @@
         <parent link="back_leg"/>
         <child link="back_foot"/>
         <axis xyz="0 -1 0"/>
-        <limit lower="${-pi/2}" upper="${pi/2}" velocity="5" effort="1000"/>
+        <limit lower="${-pi}" upper="${pi}" velocity="5" effort="1000"/>
         <dynamics damping="0.1" friction="${joint_friction}"/>
     </joint>
 
@@ -172,6 +184,9 @@
             <geometry>
                 <mesh filename="${foot_mesh}" scale="${mesh_scale}"/>
             </geometry>
+            <material name="red">
+                <color rgba="1 0 0 0.8"/>
+            </material>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="${pi/2} 0  ${pi/2}"/>

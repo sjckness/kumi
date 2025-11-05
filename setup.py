@@ -43,6 +43,8 @@ setup(
             'PID_tuner_GUI = kumi.PID_tuner_GUI:main',
             'traj = kumi.kumi_trajectory_controller:main',
             'console_input = kumi.console_input:main',
+            'genetic_pid = kumi.genetic_pid_tuner:main',
+            'test_move = kumi.test_move:main',
         ]
     },
 

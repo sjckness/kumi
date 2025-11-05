@@ -13,8 +13,11 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Float64MultiArray
-
+from std_msgs.msg import Float64MultiArray, String
+import os
+import csv
+import math
+from rclpy.parameter import Parameter
 
 class PIDController(Node):
     ANSI_RED = "\033[91m"
@@ -24,26 +27,34 @@ class PIDController(Node):
     def __init__(self):
         super().__init__('pid_effort_controller')
 
-        # Allow external launch files to set / use simulation time.
-        #self.declare_parameter('use_sim_time', False)
-
         # joint list
         self.joints = ['front_sh', 'front_ank', 'back_sh', 'back_ank']
         self.num_joints = len(self.joints)
 
+        # --- PARAMETRI ---
+        self.declare_parameter('csv_rate', 2)   # tempo (s) tra un target e l'altro
+        self.declare_parameter('loop_sequence', False)  # True → ricomincia da capo
+        self.declare_parameter('Kp', 1.5)
+        self.declare_parameter('Ki', 2)
+        self.declare_parameter('Kd', 0)
+
+        self.Kp_val = self.get_parameter('Kp').value
+        self.Ki_val = self.get_parameter('Ki').value
+        self.Kd_val = self.get_parameter('Kd').value
+       
         # Gains by joint
-        self.kp = np.array([1.45, 1.45, 1.45, 1.45], dtype=float)
-        self.ki = np.array([1.0, 1.0, 1.0, 1.0], dtype=float)
-        self.kd = np.array([0.0, 0.0, 0.0, 0.0], dtype=float)
+        self.kp = np.array([self.Kp_val, self.Kp_val, self.Kp_val, self.Kp_val],       dtype=float)
+        self.ki = np.array([self.Ki_val, self.Ki_val, self.Ki_val, self.Ki_val],        dtype=float)
+        self.kd = np.array([0.0, 0.0, 0.0, 0.0],        dtype=float)
 
         # Effort limits
         self.max_effort = 6.0   #(N/cm)
-        self.max_delta = 1.0    #max delta effort (to be find a good value)
-        tolerance_value = float(self.declare_parameter('position_tolerance', 0.05).value)   #tollerance arround the target positions
+        self.max_delta = 100.0    #max delta effort (to be find a good value)
+        tolerance_value = float(self.declare_parameter('position_tolerance', 0.01).value)   #tollerance arround the target positions
         self.position_tolerance = np.full(self.num_joints, tolerance_value, dtype=float)
 
         # Internal state variables.
-        self.control_period = 0.01                                  #freq control -> 100 Hz
+        self.control_period = 0.001                                  #freq control -> 1 kHz
         self.target_positions = np.zeros(self.num_joints)
         self.last_positions = np.zeros(self.num_joints)
         self.integrals = np.zeros(self.num_joints)
@@ -52,6 +63,12 @@ class PIDController(Node):
         self.prev_errors = np.zeros(self.num_joints)
         self.joint_indices = None
 
+        # Sequenza CSV
+        self.sequence = []
+        self.current_step = 0
+        self.sequence_timer = None
+        self.sequence_active = False
+
         # Joint_states for feedback
         self.subscription_joint_state = self.create_subscription(
             JointState,
@@ -59,18 +76,26 @@ class PIDController(Node):
             self.joint_state_callback,
             100,
         )
-        #target positions
+        #target positions command:"ros2 topic pub /target_sequence std_msgs/msg/String "data: '/home/andreas/dev_ws/src/kumi/resource/traj.csv'" "
         self.subscription_target = self.create_subscription(
             Float64MultiArray,
             '/target_positions',
             self.target_callback,
             100,
         )
+        #get target sequence
+        self.subscription_sequence = self.create_subscription(
+            String,
+            '/target_sequence',
+            self.sequence_callback,
+            10,
+        )
+        
         #efforts published 
         self.command_publisher = self.create_publisher(
             Float64MultiArray,
             '/joint_group_effort_controller/commands',
-            100,
+            1000,
         )
         #publish efforts and actual positions of the joints
         self.pid_data_publisher = self.create_publisher(
@@ -83,6 +108,20 @@ class PIDController(Node):
         self.print_timer = self.create_timer(1.0, self.print_data)                      #console log timer
 
     # Callbacks
+
+    def param_callback(self, params: list[Parameter]):
+        for param in params:
+            if param.name == 'Kp':
+                self.Kp = param.value
+            elif param.name == 'Ki':
+                self.Ki = param.value
+            elif param.name == 'Kd':
+                self.Kd = param.value
+
+        self.get_logger().info(
+            f'PID updated: Kp={self.Kp}, Ki={self.Ki}, Kd={self.Kd}'
+        )
+    
     def joint_state_callback(self, msg: JointState) -> None:
         if not msg.name:
             return
@@ -98,6 +137,56 @@ class PIDController(Node):
         data = np.array(msg.data, dtype=float)
         self.target_positions = data                            #update target positions
     
+    def sequence_callback(self, msg: str) -> None:
+        """Riceve il percorso di un CSV con la sequenza dei target."""
+        path = msg.data.strip()
+        if not path:
+            self.get_logger().warn("Ricevuto nome file CSV vuoto.")
+            return
+
+        self.sequence = self.load_csv_sequence(path)
+        if not self.sequence:
+            self.get_logger().error(f"Sequenza vuota o file non valido: {path}")
+            return
+
+        # (Ri)avvia la sequenza
+        self.get_logger().info(f"Caricata sequenza di {len(self.sequence)} target da {path}")
+        self.current_step = 0
+        self.sequence_active = True
+        if self.sequence_timer is not None:
+            self.sequence_timer.cancel()
+
+        csv_rate = float(self.get_parameter('csv_rate').value)
+        self.sequence_timer = self.create_timer(csv_rate, self.next_target_from_sequence)
+
+    def load_csv_sequence(self, filepath):
+        if not os.path.exists(filepath):
+            self.get_logger().error(f"File CSV non trovato: {filepath}")
+            return []
+        sequence = []
+        with open(filepath, 'r') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                # Conversione gradi → radianti
+                values = np.array([float(x) * math.pi / 180.0 for x in row], dtype=float)
+                sequence.append(values)
+        return sequence
+
+    def next_target_from_sequence(self):
+        if not self.sequence:
+            return
+        self.target_positions = self.sequence[self.current_step]
+        self.current_step += 1
+
+        # fine sequenza → o loop o stop
+        if self.current_step >= len(self.sequence):
+            if self.get_parameter('loop_sequence').value:
+                self.current_step = 0
+            else:
+                self.get_logger().info("Sequenza completata.")
+                self.sequence_timer.cancel()
+                self.sequence_active = False
+
     #---------------------
     # --- Control loop ---
     #---------------------
@@ -149,11 +238,11 @@ class PIDController(Node):
         position_str = ", ".join(f"{value:.3f}" for value in self.last_positions)
         pos_error_str = ", ".join(self._format_effort(value) for value in (self.target_positions - self.last_positions))
         self.get_logger().info(f"Efforts: [{efforts_str}]")
-        self.get_logger().info(f"Positions: [{pos_error_str}]")
+        self.get_logger().info(f"Error: [{pos_error_str}]")
 
     def _format_effort(self, value: float) -> str:                          #effort saturations printed in red
         formatted = f"{value:.3f}"
-        if abs(value) >= 0.05:
+        if abs(value) >= 0.1:
             return f"{self.ANSI_RED}{formatted}{self.ANSI_RESET}"
         if abs(value) > 0:
             return f"{self.ANSI_GREEN}{formatted}{self.ANSI_RESET}"
