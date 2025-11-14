@@ -28,10 +28,7 @@
     
     <gazebo>
         <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
-            <parameters>/home/andreas/dev_ws/install/kumi/share/kumi/config/trajectory_control_config.yaml</parameters>  
-        </plugin>
-        <plugin name="gz::sim::systems::WrenchVisualizer" filename="gz-sim-wrench-visualizer-system">
-            <topic>/wrench</topic>
+            <parameters>/home/andreas/dev_ws/src/kumi/config/trajectory_control_config.yaml</parameters>  
         </plugin>
     </gazebo>
 

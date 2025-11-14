@@ -54,7 +54,7 @@ class SimpleJointTrajectory(Node):
 
         point = JointTrajectoryPoint()
         point.positions = list(msg.data)
-        point.time_from_start = Duration(nanosec=5000000)#tempo per raggiungere la posizione
+        point.time_from_start = Duration(nanosec=500000000)#tempo per raggiungere la posizione
 
         traj.points.append(point)
 

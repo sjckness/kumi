@@ -15,7 +15,7 @@ setup(
         (f'share/{package_name}/launch', glob('launch/*.py')),
 
         # URDF / xacro
-        (f'share/{package_name}/description/xacro/', glob('description/xacro/*.xacro')),
+        (f'share/{package_name}/description/', glob('description/*.xacro')),
 
         # meshes
         (f'share/{package_name}/description/mesh/', glob('description/mesh/*')),
@@ -38,13 +38,19 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'PID_effort_controller = kumi.PID_effort_controller:main',
-            'com_calculator = kumi.com_calculator:main',
-            'PID_tuner_GUI = kumi.PID_tuner_GUI:main',
-            'traj = kumi.kumi_trajectory_controller:main',
-            'console_input = kumi.console_input:main',
-            'genetic_pid = kumi.genetic_pid_tuner:main',
-            'test_move = kumi.test_move:main',
+            'PID_effort_controller = kumi.controllers.PID_effort_controller:main',
+            'kumi_seq_traj_controller = kumi.controllers.kumi_seq_traj_controller:main',
+            'kumi_trajectory_controller = kumi.controllers.kumi_trajectory_controller:main',
+
+            'kumi_signal_bringup = kumi.matlab_interface.kumi_signal_bringup:main',
+            'kumi_single_move = kumi.matlab_interface.single_move:main',
+            'reset = kumi.matlab_interface.reset:main',
+
+            'com_calculator = kumi.phisics.com_calculator:main',
+
+            'console_input = kumi.testing.console_input:main',
+            'test_move = kumi.testing.test_move:main',
+            'hard_reset = kumi.testing.hard_reset:main',
         ]
     },
 

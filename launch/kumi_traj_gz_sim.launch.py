@@ -8,7 +8,7 @@ from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchD
 from launch.actions import RegisterEventHandler, SetEnvironmentVariable
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -28,7 +28,7 @@ def generate_launch_description():
     )
 
     arguments = LaunchDescription([
-                DeclareLaunchArgument('world', default_value='empty',     #name of the world.sdf file in /worlds folder
+                DeclareLaunchArgument('world', default_value='stairs',     #name of the world.sdf file in /worlds folder
                           description='Gz sim World'),
            ]
     )
@@ -52,16 +52,12 @@ def generate_launch_description():
             os.path.join(pkg_ros_gz_sim, 'launch', 'gz_sim.launch.py')
         ),
         launch_arguments={
-            'gz_args': PythonExpression([
-                "'",
-                LaunchConfiguration('world'),
-                ".sdf -v 4 -r'"
-            ])
+            'gz_args': ['-r -v 4 stairs.sdf']
         }.items()
     )
     
     xacro_file = os.path.join(pkg_share,
-                              'description',
+                              'description/xacro',
                               'kumi.xacro')
 
     doc = xacro.process_file(xacro_file, mappings={'use_sim' : 'true'})
@@ -101,7 +97,7 @@ def generate_launch_description():
                    '-z', '0.5',     #spawn at .5 meters from the ground
                    '-R', '0.0',
                    '-P', '0.0',
-                   '-Y', '0.0',
+                   '-Y', '3.14159',
                    '-name', 'kumi',
                    '-allow_renaming', 'false'],
     )
@@ -139,12 +135,8 @@ def generate_launch_description():
         package='ros_gz_bridge',
         executable='parameter_bridge',
         arguments=[
-            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
-            PythonExpression([
-                "'/world/' + '",
-                LaunchConfiguration('world'),
-                "' + '/control@ros_gz_interfaces/srv/ControlWorld'"
-            ])
+            {'/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'},
+            {'/world/empty/control@ros_gz_interfaces/srv/ControlWorld'}
         ],
         output='screen'
     )
@@ -174,10 +166,10 @@ def generate_launch_description():
         gz_spawn_entity,
         foxglove_bridge,
         load_joint_state_broadcaster,
-        #load_joint_trajectory_controller,
-        load_joint_effort_controller,
+        load_joint_trajectory_controller,
+        #load_joint_effort_controller,
         #trajectory_controller,
-        pid_effort_controller
+        #pid_effort_controller
         #com_calculator,
     ]
     )

@@ -1,14 +1,3 @@
-#--------------------------------------------------------------------------------#
-#   
-#   simple PID controller 
-#   
-#   reads the /target_positions and perform a PID on the efforts using /joint_states as feedback
-#   
-#   -> not tuned
-#   
-#   
-#--------------------------------------------------------------------------------#
-
 import numpy as np
 import rclpy
 from rclpy.node import Node
@@ -34,9 +23,9 @@ class PIDController(Node):
         # --- PARAMETRI ---
         self.declare_parameter('csv_rate', 2)   # tempo (s) tra un target e l'altro
         self.declare_parameter('loop_sequence', False)  # True → ricomincia da capo
-        self.declare_parameter('Kp', 1.5)
-        self.declare_parameter('Ki', 2)
-        self.declare_parameter('Kd', 0)
+        self.declare_parameter('Kp', 1.45)
+        self.declare_parameter('Ki', 1.0)
+        self.declare_parameter('Kd', 0.0)
 
         self.Kp_val = self.get_parameter('Kp').value
         self.Ki_val = self.get_parameter('Ki').value
@@ -204,7 +193,7 @@ class PIDController(Node):
 
         #integral and derivatives
         self.integrals += errors * self.control_period
-        self.integrals[within_tolerance] = 0.0
+        #self.integrals[within_tolerance] = 0.0
         derivatives = (errors - self.prev_errors) / self.control_period
         self.prev_errors = errors.copy()
 
@@ -226,7 +215,7 @@ class PIDController(Node):
 
         pid_msg = Float64MultiArray()
         pid_msg.data = np.concatenate(
-            (p_term, i_term, d_term, self.target_positions, self.last_positions)
+            (self.target_positions, self.last_positions)
         ).tolist()
         self.pid_data_publisher.publish(pid_msg)                            #publish all pid information
 
@@ -238,7 +227,7 @@ class PIDController(Node):
         position_str = ", ".join(f"{value:.3f}" for value in self.last_positions)
         pos_error_str = ", ".join(self._format_effort(value) for value in (self.target_positions - self.last_positions))
         self.get_logger().info(f"Efforts: [{efforts_str}]")
-        self.get_logger().info(f"Error: [{pos_error_str}]")
+        self.get_logger().info(f"Error: [{position_str}]")
 
     def _format_effort(self, value: float) -> str:                          #effort saturations printed in red
         formatted = f"{value:.3f}"

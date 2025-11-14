@@ -1,34 +1,63 @@
-<?xml version="1.0" ?>
-<sdf version="1.7">
-  <world name="stairs">
-
-    <gravity>0 0 -9.81</gravity>
-
-    <physics type="bullet" name="bullet">
-      <max_step_size>0.01</max_step_size>
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="empty_with_ground_and_steps">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
       <real_time_factor>1.0</real_time_factor>
     </physics>
+    <plugin
+      filename="gz-sim-physics-system"
+      name="gz::sim::systems::Physics">
+    </plugin>
+    <plugin
+      filename="gz-sim-user-commands-system"
+      name="gz::sim::systems::UserCommands">
+    </plugin>
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+    <plugin
+      filename="gz-sim-contact-system"
+      name="gz::sim::systems::Contact">
+    </plugin>
 
+    <scene>
+      <ambient>0.4 0.4 0.4 1.0</ambient>
+      <background>0.7 0.7 0.7 1.0</background>
+      <shadows>true</shadows>
+    </scene>
 
-    <light type="directional" name="sun">
+    <physics name="physics" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+
+    <gravity>0 0 -9.8</gravity>
+
+    <wind/>
+
+    <!-- Sun light -->
+    <light name="sun" type="directional">
       <cast_shadows>true</cast_shadows>
       <pose>0 0 10 0 0 0</pose>
       <diffuse>1 1 1 1</diffuse>
-      <specular>0.5 0.5 0.5 1</specular>
+      <specular>0.2 0.2 0.2 1</specular>
       <attenuation>
         <range>1000</range>
         <constant>0.9</constant>
         <linear>0.01</linear>
         <quadratic>0.001</quadratic>
       </attenuation>
-      <direction>-0.5 0.1 -0.9</direction>
+      <direction>-0.5 0.5 -1</direction>
     </light>
 
+    <!-- Ground plane -->
     <model name="ground_plane">
-      
       <static>true</static>
-      <link name="ground_link">
-        <collision name="ground_collision">
+      <link name="link">
+        <collision name="collision">
           <geometry>
             <plane>
               <normal>0 0 1</normal>
@@ -36,198 +65,105 @@
             </plane>
           </geometry>
         </collision>
-        <visual name="ground_visual">
+
+        <visual name="visual">
           <geometry>
             <plane>
               <normal>0 0 1</normal>
               <size>100 100</size>
             </plane>
           </geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Grey</name>
-            </script>
-          </material>
+        </visual>
+        <material>
+          <ambient>0.7 0.7 0.7 1</ambient>
+          <diffuse>0.8 0.8 0.8 1</diffuse>
+        </material>
+      </link>
+    </model>
+
+    <!-- ===================== -->
+    <!--       3 GRADINI       -->
+    <!-- ===================== -->
+
+    <!-- Parametri -->
+    <!-- step height = 0.06 -->
+    <!-- step depth  = 0.20 -->
+    <!-- step width  = 1.00 -->
+
+    <!-- Step 1 -->
+    <model name="step_1">
+      <static>true</static>
+      <pose>0.7 0 0.03 0 0 0</pose> <!-- metà altezza sopra il terreno -->
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1.0 0.20 0.05</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1.0 0.20 0.05</size>
+            </box>
+          </geometry>
         </visual>
       </link>
     </model>
 
-    <model name="staircase">
+    <!-- Step 2 -->
+    <model name="step_2">
       <static>true</static>
-      <!-- 10 steps, each 0.1 m high (0.1 m thick), 0.4 m long along +x, 1.0 m wide along y -->
-      <!-- Step i spans x in [1 + (i-1)*0.4, 1 + i*0.4], top height i*0.1 -->
-      <pose>0 0 0 0 0 0</pose>
-      <link name="step_01">
-        <pose>1.2 0 0.05 0 0 0</pose>
+      <pose>1.1 0 0.09 0 0 0</pose> <!-- spostato di 20 cm lungo X -->
+      <link name="link">
         <collision name="collision">
           <geometry>
             <box>
-              <size>0.4 1.0 0.1</size>
+              <size>1.0 0.20 0.05</size>
             </box>
           </geometry>
         </collision>
         <visual name="visual">
           <geometry>
             <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </visual>
-      </link>
-      <link name="step_02">
-        <pose>1.6 0 0.15 0 0 0</pose>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </visual>
-      </link>
-      <link name="step_03">
-        <pose>2.0 0 0.25 0 0 0</pose>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </visual>
-      </link>
-      <link name="step_04">
-        <pose>2.4 0 0.35 0 0 0</pose>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </visual>
-      </link>
-      <link name="step_05">
-        <pose>2.8 0 0.45 0 0 0</pose>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </visual>
-      </link>
-      <link name="step_06">
-        <pose>3.2 0 0.55 0 0 0</pose>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </visual>
-      </link>
-      <link name="step_07">
-        <pose>3.6 0 0.65 0 0 0</pose>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </visual>
-      </link>
-      <link name="step_08">
-        <pose>4.0 0 0.75 0 0 0</pose>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </visual>
-      </link>
-      <link name="step_09">
-        <pose>4.4 0 0.85 0 0 0</pose>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </visual>
-      </link>
-      <link name="step_10">
-        <pose>4.8 0 0.95 0 0 0</pose>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.4 1.0 0.1</size>
+              <size>1.0 0.20 0.05</size>
             </box>
           </geometry>
         </visual>
       </link>
     </model>
+
+    <!-- Step 3 -->
+    <model name="step_3">
+      <static>true</static>
+      <pose>1.5 0 0.15 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1.0 0.20 0.05</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1.0 0.20 0.05</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- GUI -->
+    <gui fullscreen="0">
+      <camera name="default">
+        <pose>3 3 2 0 -0.4 2.2</pose>
+      </camera>
+    </gui>
+
   </world>
 </sdf>
+
+

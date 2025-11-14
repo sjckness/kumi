@@ -34,7 +34,7 @@
         <parent link="body"/>
         <child link="front_leg"/>
         <axis xyz="0 -1 0"/>
-        <limit lower="${-pi}" upper="${pi}" velocity="5" effort="1000"/>
+        <limit lower="${-2*pi}" upper="${2*pi}" velocity="5" effort="1000"/>
         <dynamics damping="0.5" friction="${joint_friction}"/>
     </joint>
 
@@ -77,7 +77,7 @@
         <parent link="front_leg"/>
         <child link="front_foot"/>
         <axis xyz="0 -1 0"/>
-        <limit lower="${-pi}" upper="${pi}" velocity="5" effort="1000"/>
+        <limit lower="${-2*pi}" upper="${2*pi}" velocity="5" effort="1000"/>
         <dynamics damping="0.1" friction="${joint_friction}"/>
     </joint>
 
@@ -119,8 +119,8 @@
         <origin xyz="${lenght/2} 0.006 0" rpy="0 0 0"/>
         <parent link="body"/>
         <child link="back_leg"/>
-        <axis xyz="0 -1 0"/>
-        <limit lower="${-pi}" upper="${pi}" velocity="5" effort="1000"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="${-2*pi}" upper="${2*pi}" velocity="5" effort="1000"/>
         <dynamics damping="0.5" friction="${joint_friction}"/>
     </joint>
 
@@ -162,8 +162,8 @@
         <origin xyz="0 0 ${-leg_len}" rpy="0 0 0"/>
         <parent link="back_leg"/>
         <child link="back_foot"/>
-        <axis xyz="0 -1 0"/>
-        <limit lower="${-pi}" upper="${pi}" velocity="5" effort="1000"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="${-2*pi}" upper="${2*pi}" velocity="5" effort="1000"/>
         <dynamics damping="0.1" friction="${joint_friction}"/>
     </joint>
 
