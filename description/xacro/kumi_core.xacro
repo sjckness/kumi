@@ -120,17 +120,17 @@
         </inertial>
     </link>
 
-    <joint name="back_sh" type="revolute">
+    <joint name="rear_sh" type="revolute">
         <origin xyz="${-lenght} 0 0" rpy="0 0 0"/>
         <parent link="body"/>
-        <child link="back_leg"/>
+        <child link="rear_leg"/>
         <axis xyz="0 1 0"/>
         <limit lower="${-pi + 0.3}" upper="0.3" velocity="5" effort="6"/> 
         <dynamics damping="0.1" friction="${joint_friction}"/>
     </joint>
 
 
-    <link name="back_leg">
+    <link name="rear_leg">
         <visual>
             <origin xyz="0 0 ${-leg_len/2}" rpy="0 0 0"/>
             <geometry>
@@ -153,17 +153,17 @@
         </inertial>
     </link>
 
-    <joint name="back_knee" type="revolute">
+    <joint name="rear_knee" type="revolute">
         <origin xyz="0 0 ${-leg_len}" rpy="0 0 0"/>
-        <parent link="back_leg"/>
-        <child link="back_leg_d"/>
+        <parent link="rear_leg"/>
+        <child link="rear_leg_d"/>
         <axis xyz="0 0 1"/>
         <limit lower="0.0" upper="0.0" velocity="5" effort="2"/> 
         <dynamics damping="10.0" friction="10.0"/>
     </joint>
 
 
-    <link name="back_leg_d">
+    <link name="rear_leg_d">
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
@@ -186,17 +186,17 @@
         </inertial>
     </link>
 
-    <joint name="back_ank" type="revolute">
+    <joint name="rear_ank" type="revolute">
         <origin xyz="0 0 ${-leg_len/4 - thikness/4}" rpy="0 0 0"/>
-        <parent link="back_leg_d"/>
-        <child link="back_foot"/>
+        <parent link="rear_leg_d"/>
+        <child link="rear_foot"/>
         <axis xyz="0 1 0"/>
         <limit lower="-0.85" upper="0.85" velocity="5" effort="6"/> 
         <dynamics damping="0.1" friction="${joint_friction}"/>
     </joint>
 
 
-    <link name="back_foot">
+    <link name="rear_foot">
         <visual>
             <origin xyz="0 0 ${-leg_len/4 - thikness/4}" rpy="0 0 0"/>
             <geometry>

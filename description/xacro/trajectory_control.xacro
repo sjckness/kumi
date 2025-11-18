@@ -14,12 +14,12 @@
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
-        <joint name="back_sh">
+        <joint name="rear_sh">
             <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
-        <joint name="back_ank">
+        <joint name="rear_ank">
             <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>

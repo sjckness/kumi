@@ -36,7 +36,7 @@ class SimpleJointTrajectory(Node):
 
         # Nomi dei giunti (devono corrispondere al controller)
         self.joint_names = [
-            'front_sh',  'front_ank' ,'back_sh', 'back_ank'
+            'front_sh',  'front_ank' ,'rear_sh', 'rear_ank'
         ]
 
         self.get_logger().info("Nodo pronto: ascolto su /target_positions")

@@ -29,30 +29,6 @@
         </inertial>
     </link>
 
-    <joint name="front_camera_joint" type="fixed">
-        <parent link="body"/>
-        <child link="front_camera"/>
-        <origin xyz="-0.105 -0.03 0.0" rpy="0 0 ${pi}"/>
-        <axis xyz="0 0 1"/>
-    </joint>
-
-    <link name="front_camera">
-        <visual>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="0.01 0.01 0.01"/> 
-            </geometry>
-            <material name="gray">
-                <color rgba="0 0 0 0.8"/>
-            </material>
-        </visual>
-        <inertial>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <mass value="0.035"/>
-            <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
-        </inertial>
-    </link>
-
     <joint name="front_sh" type="revolute">
         <origin xyz="${-lenght/2} -0.006 0" rpy="0 0 0"/>
         <parent link="body"/>
@@ -136,30 +112,6 @@
             <origin xyz="0 0 0" rpy="${pi/2} 0  ${-pi/2}"/>
             <mass value="0.15"/>
             <inertia ixx="0.000091" ixy="0.0" ixz="0.0" iyy="0.000165" iyz="0.0" izz="0.000091"/>
-        </inertial>
-    </link>
-
-    <joint name="rear_camera_joint" type="fixed">
-        <parent link="body"/>
-        <child link="rear_camera"/>
-        <origin xyz="0.105 0.03 0.0" rpy="0 0 0"/>
-        <axis xyz="0 0 1"/>
-    </joint>
-
-    <link name="rear_camera">
-        <visual>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="0.01 0.01 0.01"/> 
-            </geometry>
-            <material name="gray">
-                <color rgba="0 0 0 0.8"/>
-            </material>
-        </visual>
-        <inertial>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <mass value="0.035"/>
-            <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
         </inertial>
     </link>
 

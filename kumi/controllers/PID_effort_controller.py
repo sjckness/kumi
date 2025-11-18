@@ -17,7 +17,7 @@ class PIDController(Node):
         super().__init__('pid_effort_controller')
 
         # joint list
-        self.joints = ['front_sh', 'front_ank', 'back_sh', 'back_ank']
+        self.joints = ['front_sh', 'front_ank', 'rear_sh', 'rear_ank']
         self.num_joints = len(self.joints)
 
         # --- PARAMETRI ---

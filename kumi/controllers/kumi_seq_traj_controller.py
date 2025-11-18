@@ -36,7 +36,7 @@ class CSVJointTrajectory(Node):
         )
 
         # Joint names
-        self.joint_names = ['front_sh', 'front_ank', 'back_sh', 'back_ank']
+        self.joint_names = ['front_sh', 'front_ank', 'rear_sh', 'rear_ank']
 
         # CSV fisso
         csv_path = "/home/andreas/dev_ws/src/kumi/resource/demo_flip.csv"

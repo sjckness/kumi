@@ -28,7 +28,7 @@ def generate_launch_description():
     )
 
     arguments = LaunchDescription([
-                DeclareLaunchArgument('world', default_value='empty',     #name of the world.sdf file in /worlds folder
+                DeclareLaunchArgument('world', default_value='stairs',     #name of the world.sdf file in /worlds folder
                           description='Gz sim World'),
            ]
     )
@@ -101,7 +101,7 @@ def generate_launch_description():
                    '-z', '0.5',     #spawn at .5 meters from the ground
                    '-R', '0.0',
                    '-P', '0.0',
-                   '-Y', '0.0',
+                   '-Y', '3.14159',
                    '-name', 'kumi',
                    '-allow_renaming', 'false'],
     )
@@ -140,6 +140,10 @@ def generate_launch_description():
         executable='parameter_bridge',
         arguments=[
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+            '/frontCamera/image@sensor_msgs/msg/Image[gz.msgs.Image',
+            '/rearCamera/image@sensor_msgs/msg/Image[gz.msgs.Image',
+            '/frontCamera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
+            '/rearCamera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
             PythonExpression([
                 "'/world/' + '",
                 LaunchConfiguration('world'),

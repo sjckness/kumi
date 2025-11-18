@@ -25,9 +25,6 @@ setup(
 
         # Worlds (for Gazebo)
         (f'share/{package_name}/worlds', glob('worlds/*')),
-        
-        # Worlds (for Gazebo)
-        (f'share/{package_name}/cntr_files', glob('cntr_files/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

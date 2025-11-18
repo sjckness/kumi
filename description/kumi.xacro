@@ -4,5 +4,6 @@
     <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/variables.xacro" />
     <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/effort_control.xacro" />
     <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/kumi_mesh.xacro" />
+    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/cameras_config.xacro" />
 
 </robot>

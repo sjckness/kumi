@@ -57,6 +57,10 @@ class KumiBringup(Node):
             self.bridge = Popen([
                 'ros2', 'run', 'ros_gz_bridge', 'parameter_bridge',
                 '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+                '/frontCamera/image@sensor_msgs/msg/Image[gz.msgs.Image',
+                '/rearCamera/image@sensor_msgs/msg/Image[gz.msgs.Image',
+                '/frontCamera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
+                '/rearCamera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
                 '/world/stairs/control@ros_gz_interfaces/srv/ControlWorld'
             ])
 

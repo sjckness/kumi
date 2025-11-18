@@ -15,8 +15,8 @@ multi_joint_trajectory_controller:
     joints:
     - front_sh
     - front_ank
-    - back_sh
-    - back_ank
+    - rear_sh
+    - rear_ank
     state_interfaces:
     - position
     - velocity
