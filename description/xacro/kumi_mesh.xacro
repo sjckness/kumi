@@ -126,7 +126,7 @@
                 <color rgba="0 1 0 0.8"/>
             </material>
         </visual>
-        <collision>
+        <collision name="frontFootCollision">
             <origin xyz="0 0 0" rpy="${pi/2} 0  ${-pi/2}"/>
             <geometry>
                 <mesh filename="${foot_mesh}" scale="${mesh_scale}"/>
@@ -236,7 +236,7 @@
                 <color rgba="1 0 0 0.8"/>
             </material>
         </visual>
-        <collision>
+        <collision name="rearFootCollision">
             <origin xyz="0 0 0" rpy="${pi/2} 0  ${pi/2}"/>
             <geometry>
                 <mesh filename="${foot_mesh}" scale="${mesh_scale}"/>

@@ -144,6 +144,10 @@ def generate_launch_description():
             '/rearCamera/image@sensor_msgs/msg/Image[gz.msgs.Image',
             '/frontCamera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
             '/rearCamera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
+            '/bodyImu/data@sensor_msgs/msg/Imu[gz.msgs.IMU',
+            '/frontFootCollisionFlag@ros_gz_interfaces/msg/Contacts[gz.msgs.Contacts',
+            '/rearFootCollisionFlag@ros_gz_interfaces/msg/Contacts[gz.msgs.Contacts',
+
             PythonExpression([
                 "'/world/' + '",
                 LaunchConfiguration('world'),

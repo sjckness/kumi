@@ -59,4 +59,50 @@
         </sensor>
     </gazebo>
 
+    <gazebo reference="body">
+        <sensor name="imu_sensor" type="imu">
+            <always_on>true</always_on>
+            <update_rate>100</update_rate>
+
+            <topic>/bodyImu/data</topic>
+
+            <imu>
+                <angular_velocity>
+                    <x noise_type="gaussian" mean="0.0" stddev="0.001"/>
+                    <y noise_type="gaussian" mean="0.0" stddev="0.001"/>
+                    <z noise_type="gaussian" mean="0.0" stddev="0.001"/>
+                </angular_velocity>
+
+                <linear_acceleration>
+                    <x noise_type="gaussian" mean="0.0" stddev="0.01"/>
+                    <y noise_type="gaussian" mean="0.0" stddev="0.01"/>
+                    <z noise_type="gaussian" mean="0.0" stddev="0.01"/>
+                </linear_acceleration>
+            </imu>
+        </sensor>
+    </gazebo>
+
+    <gazebo reference="front_foot">
+        <sensor name='frontFootCollision' type='contact'>
+          <contact>
+            <collision>frontFootCollision</collision>
+            <topic>/frontFootCollisionFlag</topic>
+          </contact>
+          <always_on>1</always_on>
+          <update_rate>100</update_rate>
+        </sensor>
+    </gazebo>
+
+    <gazebo reference="rear_foot">
+        <sensor name='rearFootCollision' type='contact'>
+          <contact>
+            <collision>rearFootCollision</collision>
+            <topic>/rearFootCollisionFlag</topic>
+          </contact>
+          <always_on>1</always_on>
+          <update_rate>100</update_rate>
+        </sensor>
+    </gazebo>
+
+
 </robot>
