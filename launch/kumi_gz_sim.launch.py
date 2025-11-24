@@ -14,6 +14,12 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
+
+    world_name = 'stairs'
+    screenOn = ' '
+    screenOff = ' -s '
+
+
     # Launch Arguments
     use_sim_time = LaunchConfiguration('use_sim_time', default=True)
 
@@ -28,7 +34,7 @@ def generate_launch_description():
     )
 
     arguments = LaunchDescription([
-                DeclareLaunchArgument('world', default_value='stairs',     #name of the world.sdf file in /worlds folder
+                DeclareLaunchArgument('world', default_value=world_name,     #name of the world.sdf file in /worlds folder
                           description='Gz sim World'),
            ]
     )
@@ -40,7 +46,8 @@ def generate_launch_description():
                     ('gz_args', [LaunchConfiguration('world'),
                                  '.sdf',
                                  ' -v 5',
-                                 ' -r']
+                                 screenOff,
+                                 '-r']
                     )
                 ]
              )
@@ -145,8 +152,8 @@ def generate_launch_description():
             '/frontCamera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
             '/rearCamera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
             '/bodyImu/data@sensor_msgs/msg/Imu[gz.msgs.IMU',
-            '/frontFootCollisionFlag@ros_gz_interfaces/msg/Contacts[gz.msgs.Contacts',
-            '/rearFootCollisionFlag@ros_gz_interfaces/msg/Contacts[gz.msgs.Contacts',
+            '/collisionFlag/frontFoot@ros_gz_interfaces/msg/Contacts[gz.msgs.Contacts',
+            '/collisionFlag/rearFoot@ros_gz_interfaces/msg/Contacts[gz.msgs.Contacts',
 
             PythonExpression([
                 "'/world/' + '",

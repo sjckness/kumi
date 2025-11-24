@@ -8,7 +8,7 @@ class test_move(Node):
     def __init__(self):
         super().__init__('test_move')
 
-        self.sequence_file_path = "/home/andreas/dev_ws/src/kumi/resource/test_move.csv"
+        self.sequence_file_path = "/home/andreas/dev_ws/src/kumi/resource/.csv"
         self.sender_period = 0.5
         self.publish_duration = Duration(seconds=2.0)
 

@@ -44,10 +44,13 @@ setup(
             'reset = kumi.matlab_interface.reset:main',
 
             'com_calculator = kumi.phisics.com_calculator:main',
+            'orientation = kumi.phisics.orientation:main',
 
             'console_input = kumi.testing.console_input:main',
             'test_move = kumi.testing.test_move:main',
             'hard_reset = kumi.testing.hard_reset:main',
+
+            'real_imu = kumi.external.real_imu:main',
         ]
     },
 

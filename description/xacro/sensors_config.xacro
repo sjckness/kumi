@@ -7,7 +7,7 @@
             <always_on>true</always_on>
             <visualize>true</visualize>
             <update_rate>30</update_rate>
-            <topic>frontCamera/image</topic>
+            <topic>/frontCamera/image</topic>
             <gz_frame_id>camera_rgb_frame</gz_frame_id>
             <camera name="intel_realsense_r200">
                 <camera_info_topic>frontCamera/camera_info</camera_info_topic>
@@ -36,7 +36,7 @@
             <always_on>true</always_on>
             <visualize>true</visualize>
             <update_rate>30</update_rate>
-            <topic>rearCamera/image</topic>
+            <topic>/rearCamera/image</topic>
             <gz_frame_id>camera_rgb_frame</gz_frame_id>
             <camera name="intel_realsense_r200">
                 <camera_info_topic>backCamera/camera_info</camera_info_topic>
@@ -83,10 +83,10 @@
     </gazebo>
 
     <gazebo reference="front_foot">
-        <sensor name='frontFootCollision' type='contact'>
+        <sensor name='frontFootCollisionSensor' type='contact'>
           <contact>
             <collision>frontFootCollision</collision>
-            <topic>/frontFootCollisionFlag</topic>
+            <topic>/collisionFlag/rearFoot</topic>
           </contact>
           <always_on>1</always_on>
           <update_rate>100</update_rate>
@@ -94,10 +94,10 @@
     </gazebo>
 
     <gazebo reference="rear_foot">
-        <sensor name='rearFootCollision' type='contact'>
+        <sensor name='rearFootCollisionSensor' type='contact'>
           <contact>
             <collision>rearFootCollision</collision>
-            <topic>/rearFootCollisionFlag</topic>
+            <topic>/collisionFlag/rearFoot</topic>
           </contact>
           <always_on>1</always_on>
           <update_rate>100</update_rate>

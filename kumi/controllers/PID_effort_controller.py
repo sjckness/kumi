@@ -2,7 +2,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Float64MultiArray, String
+from std_msgs.msg import Float64MultiArray, String, Float32MultiArray
 import os
 import csv
 import math
@@ -23,18 +23,36 @@ class PIDController(Node):
         # --- PARAMETRI ---
         self.declare_parameter('csv_rate', 2)   # tempo (s) tra un target e l'altro
         self.declare_parameter('loop_sequence', False)  # True → ricomincia da capo
-        self.declare_parameter('Kp', 1.45)
-        self.declare_parameter('Ki', 1.0)
-        self.declare_parameter('Kd', 0.0)
+        self.declare_parameter('Kp_fs', 1.45)
+        self.declare_parameter('Kp_fa', 1.45)
+        self.declare_parameter('Kp_bs', 1.45)
+        self.declare_parameter('Kp_ba', 1.45)
+        self.declare_parameter('Ki_fs', 0.0)
+        self.declare_parameter('Ki_fa', 0.0)
+        self.declare_parameter('Ki_bs', 0.0)
+        self.declare_parameter('Ki_ba', 0.0)
+        self.declare_parameter('Kd_fs', 0.0)
+        self.declare_parameter('Kd_fa', 0.0)
+        self.declare_parameter('Kd_bs', 0.0)
+        self.declare_parameter('Kd_ba', 0.0)
 
-        self.Kp_val = self.get_parameter('Kp').value
-        self.Ki_val = self.get_parameter('Ki').value
-        self.Kd_val = self.get_parameter('Kd').value
+        self.Kp_fs_val = self.get_parameter('Kp_fs').value
+        self.Kp_fa_val = self.get_parameter('Kp_fa').value
+        self.Kp_bs_val = self.get_parameter('Kp_bs').value
+        self.Kp_ba_val = self.get_parameter('Kp_ba').value
+        self.Ki_fs_val = self.get_parameter('Ki_fs').value
+        self.Ki_fa_val = self.get_parameter('Ki_fa').value
+        self.Ki_bs_val = self.get_parameter('Ki_bs').value
+        self.Ki_ba_val = self.get_parameter('Ki_ba').value
+        self.Kd_fs_val = self.get_parameter('Kd_fs').value
+        self.Kd_fa_val = self.get_parameter('Kd_fa').value
+        self.Kd_bs_val = self.get_parameter('Kd_bs').value
+        self.Kd_ba_val = self.get_parameter('Kd_ba').value
        
         # Gains by joint
-        self.kp = np.array([self.Kp_val, self.Kp_val, self.Kp_val, self.Kp_val],       dtype=float)
-        self.ki = np.array([self.Ki_val, self.Ki_val, self.Ki_val, self.Ki_val],        dtype=float)
-        self.kd = np.array([0.0, 0.0, 0.0, 0.0],        dtype=float)
+        self.kp = np.array([self.Kp_fs_val, self.Kp_fa_val, self.Kp_bs_val, self.Kp_ba_val],       dtype=float)
+        self.ki = np.array([self.Ki_fs_val, self.Ki_fa_val, self.Ki_bs_val, self.Ki_ba_val],        dtype=float)
+        self.kd = np.array([self.Kd_fs_val, self.Kd_fa_val, self.Kd_bs_val, self.Kd_ba_val],        dtype=float)
 
         # Effort limits
         self.max_effort = 6.0   #(N/cm)
@@ -43,7 +61,7 @@ class PIDController(Node):
         self.position_tolerance = np.full(self.num_joints, tolerance_value, dtype=float)
 
         # Internal state variables.
-        self.control_period = 0.001                                  #freq control -> 1 kHz
+        self.control_period = 0.01                                  #freq control -> 1 kHz
         self.target_positions = np.zeros(self.num_joints)
         self.last_positions = np.zeros(self.num_joints)
         self.integrals = np.zeros(self.num_joints)
@@ -84,11 +102,11 @@ class PIDController(Node):
         self.command_publisher = self.create_publisher(
             Float64MultiArray,
             '/joint_group_effort_controller/commands',
-            1000,
+            100,
         )
         #publish efforts and actual positions of the joints
         self.pid_data_publisher = self.create_publisher(
-            Float64MultiArray,
+            Float32MultiArray,
             '/PID_data',
             100,
         )
@@ -213,7 +231,7 @@ class PIDController(Node):
         command_msg.data = efforts.tolist()
         self.command_publisher.publish(command_msg)                         #publish the efforts
 
-        pid_msg = Float64MultiArray()
+        pid_msg = Float32MultiArray()
         pid_msg.data = np.concatenate(
             (self.target_positions, self.last_positions)
         ).tolist()
@@ -227,7 +245,7 @@ class PIDController(Node):
         position_str = ", ".join(f"{value:.3f}" for value in self.last_positions)
         pos_error_str = ", ".join(self._format_effort(value) for value in (self.target_positions - self.last_positions))
         self.get_logger().info(f"Efforts: [{efforts_str}]")
-        self.get_logger().info(f"Error: [{position_str}]")
+        self.get_logger().info(f"Error: [{pos_error_str}]")
 
     def _format_effort(self, value: float) -> str:                          #effort saturations printed in red
         formatted = f"{value:.3f}"

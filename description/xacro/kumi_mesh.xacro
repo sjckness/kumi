@@ -127,9 +127,9 @@
             </material>
         </visual>
         <collision name="frontFootCollision">
-            <origin xyz="0 0 0" rpy="${pi/2} 0  ${-pi/2}"/>
+            <origin xyz="0 0 -0.023" rpy="0 0 0"/>
             <geometry>
-                <mesh filename="${foot_mesh}" scale="${mesh_scale}"/>
+                <box size="0.1 0.08 0.01" />
             </geometry>
         </collision>
         <inertial>
@@ -237,9 +237,9 @@
             </material>
         </visual>
         <collision name="rearFootCollision">
-            <origin xyz="0 0 0" rpy="${pi/2} 0  ${pi/2}"/>
+            <origin xyz="0 0 -0.023" rpy="0 0 0"/>
             <geometry>
-                <mesh filename="${foot_mesh}" scale="${mesh_scale}"/>
+                <box size="0.1 0.08 0.01" />
             </geometry>
         </collision>
         <inertial>
