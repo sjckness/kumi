@@ -15,7 +15,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
 
-    world_name = 'stairs'
+    world_name = 'empty'
     screenOn = ' '
     screenOff = ' -s '
 
@@ -130,7 +130,7 @@ def generate_launch_description():
     #pid effort controller -> controlled by /target_position 
     trajectory_controller = Node(
         package='kumi',
-        executable='kumi_trajectory_controller',
+        executable='kumi_seq_traj_controller',
         output='screen'
     )
 
@@ -189,10 +189,10 @@ def generate_launch_description():
         gz_spawn_entity,
         foxglove_bridge,
         load_joint_state_broadcaster,
-        #load_joint_trajectory_controller,
-        load_joint_effort_controller,
+        load_joint_trajectory_controller,
+        #load_joint_effort_controller,
         #trajectory_controller,
-        pid_effort_controller
+        #pid_effort_controller
         #com_calculator,
     ]
     )

@@ -37,6 +37,7 @@ setup(
         'console_scripts': [
             'PID_effort_controller = kumi.controllers.PID_effort_controller:main',
             'kumi_seq_traj_controller = kumi.controllers.kumi_seq_traj_controller:main',
+            'kumi_seq_traj_controller_keyboard = kumi.controllers.kumi_seq_traj_controller_keyboard:main',
             'kumi_trajectory_controller = kumi.controllers.kumi_trajectory_controller:main',
 
             'kumi_signal_bringup = kumi.matlab_interface.kumi_signal_bringup:main',
@@ -49,8 +50,12 @@ setup(
             'console_input = kumi.testing.console_input:main',
             'test_move = kumi.testing.test_move:main',
             'hard_reset = kumi.testing.hard_reset:main',
+            'publish_active = kumi.testing.publish_active:main',
 
             'real_imu = kumi.external.real_imu:main',
+            
+            'bt = kumi.behaviors.behavior_tree:main'
+            
         ]
     },
 
