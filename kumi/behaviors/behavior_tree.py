@@ -3,7 +3,7 @@ from rclpy.node import Node
 import py_trees
 
 from .actions import SendNextCSVPoint
-from .conditions import IsActive
+from .conditions import IsActive, EmStop
 from .helpers import load_csv_in_radians
 
 class BTNode(Node):
@@ -13,14 +13,21 @@ class BTNode(Node):
         csv_path = "/home/andreas/dev_ws/src/kumi/resource/demo_flip.csv"
         positions_list = load_csv_in_radians(csv_path)
 
-        # Sequence che controlla active + ostacolo solo prima di inviare il punto
+        # step_seq: controlla che sia attivo prima di inviare tutti i punti
         step_seq = py_trees.composites.Sequence("WalkStep", memory=True)
         step_seq.add_children([
             IsActive(self),
             SendNextCSVPoint(self, positions_list),
         ])
 
-        self.tree = py_trees.trees.BehaviourTree(step_seq)
+        # main: EmStop al vertice, seguito dalla sequenza di passi
+        main = py_trees.composites.Sequence("Main", memory=False)
+        main.add_children([
+            EmStop(self),
+            step_seq,
+        ])
+
+        self.tree = py_trees.trees.BehaviourTree(main)
 
         # Tick del BT a 0.5 Hz → un punto ogni 2 secondi
         self.timer = self.create_timer(2.0, self.tree.tick)

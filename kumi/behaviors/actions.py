@@ -8,6 +8,7 @@ class SendNextCSVPoint(py_trees.behaviour.Behaviour):
         self.node = node
         self.positions_list = positions_list
         self.index = 0
+        self._completed = False
 
         self.pub = node.create_publisher(
             JointTrajectory,
@@ -17,10 +18,19 @@ class SendNextCSVPoint(py_trees.behaviour.Behaviour):
 
         self.joint_names = ['front_sh', 'front_ank', 'rear_sh', 'rear_ank']
 
+    def initialise(self):
+        # Reset progress each time the behaviour is entered
+        self.index = 0
+        self._completed = False
+
     def update(self):
-        if self.index >= len(self.positions_list):
-            self.node.get_logger().info("Sequenza completata. Riparte da capo.")
-            self.index = 0
+        if self._completed:
+            return py_trees.common.Status.SUCCESS
+
+        if not self.positions_list:
+            self.node.get_logger().warn("[BT] Nessun punto da inviare")
+            self._completed = True
+            return py_trees.common.Status.SUCCESS
 
         positions = self.positions_list[self.index]
 
@@ -37,4 +47,9 @@ class SendNextCSVPoint(py_trees.behaviour.Behaviour):
         self.node.get_logger().info(f"[BT] Inviato punto {self.index}: {positions}")
         self.index += 1
 
-        return py_trees.common.Status.SUCCESS
+        if self.index >= len(self.positions_list):
+            self.node.get_logger().info("[BT] Sequenza completata")
+            self._completed = True
+            return py_trees.common.Status.SUCCESS
+
+        return py_trees.common.Status.RUNNING
