@@ -54,7 +54,9 @@ setup(
 
             'real_imu = kumi.external.real_imu:main',
             
-            'bt = kumi.behaviors.behavior_tree:main'
+            'bt = kumi.behaviors.behavior_tree:main',
+
+            'front_distance = kumi.stereocamera.front_distance:main'
             
         ]
     },

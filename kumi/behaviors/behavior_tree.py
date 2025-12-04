@@ -3,7 +3,7 @@ from rclpy.node import Node
 import py_trees
 
 from .actions import SendNextCSVPoint
-from .conditions import IsActive, EmStop
+from .conditions import IsActive, EmStop, ObstacleRec
 from .helpers import load_csv_in_radians
 
 class BTNode(Node):
@@ -14,9 +14,10 @@ class BTNode(Node):
         positions_list = load_csv_in_radians(csv_path)
 
         # step_seq: controlla che sia attivo prima di inviare tutti i punti
-        step_seq = py_trees.composites.Sequence("WalkStep", memory=True)
+        step_seq = py_trees.composites.Selector("WalkStep", memory=True)
         step_seq.add_children([
             IsActive(self),
+            ObstacleRec(self),
             SendNextCSVPoint(self, positions_list),
         ])
 
@@ -29,8 +30,8 @@ class BTNode(Node):
 
         self.tree = py_trees.trees.BehaviourTree(main)
 
-        # Tick del BT a 0.5 Hz → un punto ogni 2 secondi
-        self.timer = self.create_timer(2.0, self.tree.tick)
+        # Tick del BT a 10 Hz
+        self.timer = self.create_timer(2, self.tree.tick)
 
 def main(args=None):
     rclpy.init(args=args)

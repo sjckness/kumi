@@ -15,7 +15,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
 
-    world_name = 'empty'
+    world_name = 'office'
     screenOn = ' '
     screenOff = ' -s '
 
@@ -103,7 +103,7 @@ def generate_launch_description():
         executable='create',
         output='screen',
         arguments=['-string', robot_desc,
-                   '-x', '0.0',
+                   '-x', '-1.0',
                    '-y', '0.0',
                    '-z', '0.5',     #spawn at .5 meters from the ground
                    '-R', '0.0',
@@ -154,6 +154,9 @@ def generate_launch_description():
             '/bodyImu/data@sensor_msgs/msg/Imu[gz.msgs.IMU',
             '/collisionFlag/frontFoot@ros_gz_interfaces/msg/Contacts[gz.msgs.Contacts',
             '/collisionFlag/rearFoot@ros_gz_interfaces/msg/Contacts[gz.msgs.Contacts',
+            '/d435_rgbd/image@sensor_msgs/msg/Image[gz.msgs.Image',
+            '/d435_rgbd/depth_image@sensor_msgs/msg/Image[gz.msgs.Image',
+            '/d435_rgbd/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
 
             PythonExpression([
                 "'/world/' + '",
@@ -162,6 +165,34 @@ def generate_launch_description():
             ])
         ],
         output='screen'
+    )
+
+    depth_to_scan = Node(
+        package='depthimage_to_laserscan',
+        executable='depthimage_to_laserscan_node',
+        name='depthimage_to_laserscan_node',
+        output='screen',
+        remappings=[
+            ('depth', '/d435_rgbd/depth_image'),
+            ('depth_camera_info', '/d435_rgbd/camera_info'),
+            ('scan', '/camera/scan')
+        ],
+        parameters=[{
+            'output_frame_id': 'camera_link',   # o il tuo optical frame
+            'range_min': 0.2,
+            'range_max': 8.0,
+            'scan_height': 10,                  # quante righe verticali usare
+        }]
+    )
+
+
+    front_distance = Node(
+        package='kumi',                      # il tuo package
+        executable='front_distance',
+        output='screen',
+        parameters=[{
+            'front_angle_width_deg': 10.0
+        }]
     )
 
     #simple center of mass computation
@@ -190,6 +221,8 @@ def generate_launch_description():
         foxglove_bridge,
         load_joint_state_broadcaster,
         load_joint_trajectory_controller,
+        depth_to_scan,
+        front_distance,
         #load_joint_effort_controller,
         #trajectory_controller,
         #pid_effort_controller
