@@ -56,7 +56,9 @@ setup(
             
             'bt = kumi.behaviors.behavior_tree:main',
 
-            'front_distance = kumi.stereocamera.front_distance:main'
+            'front_distance = kumi.stereocamera.front_distance:main',
+
+            'servo_control = kumi.hw.servo_control:main'
             
         ]
     },
