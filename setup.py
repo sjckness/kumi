@@ -58,7 +58,7 @@ setup(
 
             'front_distance = kumi.stereocamera.front_distance:main',
 
-            'servo_control = kumi.hw.servo_control:main'
+            'servo_control = kumi.hw.servo_serial_control:main'
             
         ]
     },
