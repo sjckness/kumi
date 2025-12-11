@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32MultiArray
 
 import serial
 
@@ -15,7 +14,7 @@ class ServoSerialBridge(Node):
         self.declare_parameter('port', '/dev/ttyACM0')
         self.declare_parameter('baudrate', 115200)
 
-        self.last_angle = None   # memorizza ultimo angolo mandato
+        self.last_angles = None   # memorizza ultimo set di angoli mandato
 
         port = self.get_parameter('port').get_parameter_value().string_value
         baudrate = self.get_parameter('baudrate').get_parameter_value().integer_value
@@ -28,37 +27,37 @@ class ServoSerialBridge(Node):
 
         # Subscriber all’angolo
         self.sub = self.create_subscription(
-            Float32,
+            Float32MultiArray,
             '/servo_angle',          # topic da cui leggi l'angolo
             self.angle_callback,
             10
         )
 
     
-    def angle_callback(self, msg: Float32):
+    def angle_callback(self, msg: Float32MultiArray):
         if self.ser is None or not self.ser.is_open:
             self.get_logger().warn_throttle(5.0, "Seriale non aperta.")
             return
 
-        angle = int(msg.data)
+        # Converti e clampa ogni valore
+        angles = [max(0, min(int(val), 180)) for val in msg.data]
 
-        # Clamp
-        angle = max(0, min(angle, 180))
+        if not angles:
+            self.get_logger().warn("Messaggio vuoto su /servo_angle.")
+            return
 
         # Se l'angolo è IDENTICO all'ultimo già inviato → non fare nulla
-        if self.last_angle == angle:
+        if self.last_angles == tuple(angles):
             return
 
         # Aggiorna ultimo angolo
-        self.last_angle = angle
+        self.last_angles = tuple(angles)
 
         # Manda alla seriale solo i cambi veri
-        try:
-            data = f"{angle}"
-            self.ser.write(data.encode('ascii'))
-            self.get_logger().info(f"Inviato → {angle}")
-        except Exception as e:
-            self.get_logger().error(f"Errore seriale: {e}")
+        
+        data = " ".join(str(a) for a in angles)
+        self.ser.write(data.encode('ascii'))
+        self.get_logger().info(f"Inviato → {data}")
 
 
 def main(args=None):
@@ -77,4 +76,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-

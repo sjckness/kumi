@@ -60,7 +60,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        foxglove_bridge,
+        #foxglove_bridge,
         depth_to_scan,
         front_distance,
         bt,
