@@ -24,9 +24,9 @@ ros2 + gazebo model and control
 ## launch
 in /dev_ws  
 ```bash
--> colcon build --symlink-install --packages-select kumi
--> source install/setup.bash  
--> ros2 launch kumi_controller kumi_gz_sim.launch.py
+colcon build --symlink-install --packages-select kumi
+source install/setup.bash  
+ros2 launch kumi_controller kumi_gz_sim.launch.py
 ```
 
 ## to kill gazebo
