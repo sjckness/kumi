@@ -15,7 +15,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
 
-    world_name = 'office'
+    world_name = 'empty'
     screenOn = ' '
     screenOff = ' -s '
 
@@ -218,11 +218,11 @@ def generate_launch_description():
         bridge,
         node_robot_state_publisher,
         gz_spawn_entity,
-        foxglove_bridge,
+        #foxglove_bridge,
         load_joint_state_broadcaster,
         load_joint_trajectory_controller,
-        depth_to_scan,
-        front_distance,
+        #depth_to_scan,
+        #front_distance,
         #load_joint_effort_controller,
         #trajectory_controller,
         #pid_effort_controller
