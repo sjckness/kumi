@@ -30,7 +30,12 @@ def generate_launch_description():
 
     gazebo_resource_path = SetEnvironmentVariable(
         name='GZ_SIM_RESOURCE_PATH',
-        value=os.path.join(pkg_share, 'worlds')
+        # include worlds and meshes so package://kumi/... resolves inside Gazebo Sim
+        value=":".join([
+            os.path.join(pkg_share, 'worlds'),
+            os.path.join(pkg_share, 'description'),
+            os.path.join(pkg_share, 'description', 'mesh'),
+        ])
     )
 
     arguments = LaunchDescription([

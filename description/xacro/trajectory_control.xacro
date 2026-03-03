@@ -9,7 +9,12 @@
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
-        <joint name="front_ank">
+        <joint name="front_ank_y">
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="front_ank_z">
             <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
@@ -19,7 +24,12 @@
             <state_interface name="position"/>
             <state_interface name="velocity"/>
         </joint>
-        <joint name="rear_ank">
+        <joint name="rear_ank_y">
+            <command_interface name="position"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+        <joint name="rear_ank_z">
             <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
@@ -28,7 +38,7 @@
     
     <gazebo>
         <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
-            <parameters>/home/andreas/dev_ws/src/kumi/config/trajectory_control_config.yaml</parameters>  
+            <parameters>$(find kumi)/config/trajectory_control_config.yaml</parameters>  
         </plugin>
     </gazebo>
 

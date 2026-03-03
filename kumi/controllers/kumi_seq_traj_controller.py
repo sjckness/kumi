@@ -4,12 +4,13 @@ from rclpy.node import Node
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
 import csv
-import os
 import math
+from pathlib import Path
+from ament_index_python.packages import get_package_share_directory
 
 
 class CSVJointTrajectory(Node):
-    def __init__(self, csv_path):
+    def __init__(self, csv_path: str | None = None):
         super().__init__('csv_joint_trajectory')
 
         # Publisher
@@ -22,10 +23,15 @@ class CSVJointTrajectory(Node):
         # Joint names
         self.joint_names = ['front_sh', 'front_ank', 'rear_sh', 'rear_ank']
 
-        # CSV fisso
-        csv_path = "/home/andreas/dev_ws/src/kumi/resource/demo_flip.csv"
+        pkg_share = Path(get_package_share_directory('kumi'))
+        default_csv = pkg_share / 'resource/demo_flip.csv'
 
-        if not os.path.exists(csv_path):
+        # consenti override via parametro ROS o argomento esplicito
+        self.declare_parameter('csv_path', str(default_csv))
+        param_csv = Path(self.get_parameter('csv_path').value)
+        csv_path = Path(csv_path) if csv_path else param_csv
+
+        if not csv_path.exists():
             raise FileNotFoundError(f"CSV non trovato: {csv_path}")
 
         self.positions_list = self.load_csv_in_radians(csv_path)
@@ -81,9 +87,7 @@ class CSVJointTrajectory(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    csv_path = "/home/andreas/trajectory.csv"  # ignorato perché sovrascritto sopra
-
-    node = CSVJointTrajectory(csv_path)
+    node = CSVJointTrajectory()
     rclpy.spin(node)
 
     node.destroy_node()
@@ -92,4 +96,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-

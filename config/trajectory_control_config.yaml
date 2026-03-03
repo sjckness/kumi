@@ -14,9 +14,11 @@ multi_joint_trajectory_controller:
   ros__parameters:
     joints:
     - front_sh
-    - front_ank
+    - front_ank_y
+    - front_ank_z
     - rear_sh
-    - rear_ank
+    - rear_ank_y
+    - rear_ank_z
     state_interfaces:
     - position
     - velocity

@@ -3,8 +3,8 @@ import trimesh
 import numpy as np
 from pathlib import Path
 
-# Percorso al file STL
-stl_path = Path("/home/andreas/dev_ws/src/kumi/description/mesh/body.STL")
+# Percorso al file STL relativo al pacchetto
+stl_path = Path(__file__).resolve().parent.parent / "description/mesh/body.STL"
 
 # Carica la mesh
 mesh = trimesh.load_mesh(stl_path)
@@ -50,4 +50,3 @@ for i in range(3):
 
 # Mostra tutto
 scene.show()
-

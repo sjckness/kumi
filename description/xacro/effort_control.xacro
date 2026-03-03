@@ -32,7 +32,7 @@
     
     <gazebo>
         <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
-            <parameters>/home/andreas/dev_ws/src/kumi/config/effort_control_config.yaml</parameters>  
+            <parameters>$(find kumi)/config/effort_control_config.yaml</parameters>  
         </plugin>
     </gazebo>
 

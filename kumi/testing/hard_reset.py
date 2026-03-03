@@ -7,6 +7,7 @@ from subprocess import Popen
 import time
 from pathlib import Path
 from std_msgs.msg import Float64MultiArray, String, Float64
+from ament_index_python.packages import get_package_share_directory
 
 
 class ResetAndSpawnXacroCLI(Node):
@@ -16,7 +17,8 @@ class ResetAndSpawnXacroCLI(Node):
         # Parametri
         self.world = 'my_empty'
         self.robot_name = 'kumi'
-        self.xacro_path = Path('/home/andreas/dev_ws/src/kumi/description/xacro/kumi.xacro')
+        pkg_share = Path(get_package_share_directory('kumi'))
+        self.xacro_path = pkg_share / 'description/xacro/kumi.xacro'
 
         if not self.xacro_path.exists():
             self.get_logger().error(f'File Xacro non trovato: {self.xacro_path}')

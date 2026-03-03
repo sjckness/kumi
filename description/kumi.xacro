@@ -1,9 +1,10 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="kumi">
-   
-    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/variables.xacro" />
-    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/trajectory_control.xacro" />
-    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/kumi_mesh_stereocamera.xacro" />
-    <xacro:include filename="/home/andreas/dev_ws/src/kumi/description/xacro/sensors_config.xacro" />
 
+    <xacro:property name="kumi_share" value="$(find kumi)"/>
+
+    <xacro:include filename="${kumi_share}/description/xacro/variables.xacro" />
+    <xacro:include filename="${kumi_share}/description/xacro/trajectory_control.xacro" />
+    <xacro:include filename="${kumi_share}/description/xacro/kumi_mesh_stereocamera.xacro" />
+    <xacro:include filename="${kumi_share}/description/xacro/sensors_config.xacro" />
 </robot>

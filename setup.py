@@ -16,6 +16,7 @@ setup(
 
         # URDF / xacro
         (f'share/{package_name}/description/', glob('description/*.xacro')),
+        (f'share/{package_name}/description/xacro', glob('description/xacro/*.xacro')),
 
         # meshes
         (f'share/{package_name}/description/mesh/', glob('description/mesh/*')),
@@ -25,6 +26,9 @@ setup(
 
         # Worlds (for Gazebo)
         (f'share/{package_name}/worlds', glob('worlds/*')),
+
+        # CSV and other resources
+        (f'share/{package_name}/resource', glob('resource/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

@@ -2,9 +2,10 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="kumi">
 
     <xacro:property name="mesh_scale" value="0.001 0.001 0.001"/>
-    <xacro:property name="body_mesh" value="/home/andreas/dev_ws/src/kumi/description/mesh/body_v5.STL"/>
-    <xacro:property name="leg_mesh" value="/home/andreas/dev_ws/src/kumi/description/mesh/leg_v2.stl"/>
-    <xacro:property name="foot_mesh" value="/home/andreas/dev_ws/src/kumi/description/mesh/piedino_v3.STL"/>
+    <xacro:property name="mesh_dir" value="file://${kumi_share}/description/mesh"/>
+    <xacro:property name="body_mesh" value="${mesh_dir}/body_v5.STL"/>
+    <xacro:property name="leg_mesh" value="${mesh_dir}/leg_v2.stl"/>
+    <xacro:property name="foot_mesh" value="${mesh_dir}/piedino_v3.STL"/>
 
     <link name="body">
         <visual>

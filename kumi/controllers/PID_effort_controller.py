@@ -83,7 +83,7 @@ class PIDController(Node):
             self.joint_state_callback,
             100,
         )
-        #target positions command:"ros2 topic pub /target_sequence std_msgs/msg/String "data: '/home/andreas/dev_ws/src/kumi/resource/traj.csv'" "
+        # target positions command: ros2 topic pub /target_sequence std_msgs/msg/String "data: '$(ros2 pkg prefix kumi)/share/kumi/resource/traj.csv'"
         self.subscription_target = self.create_subscription(
             Float64MultiArray,
             '/target_positions',

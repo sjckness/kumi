@@ -2,10 +2,11 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="kumi">
 
     <xacro:property name="mesh_scale" value="0.001 0.001 0.001"/>
-    <xacro:property name="body_mesh" value="/home/andreas/dev_ws/src/kumi/description/mesh/body_v5.STL"/>
-    <xacro:property name="leg_mesh" value="/home/andreas/dev_ws/src/kumi/description/mesh/leg_v2.stl"/>
-    <xacro:property name="foot_mesh" value="/home/andreas/dev_ws/src/kumi/description/mesh/piedino_v3.STL"/>
-    <xacro:property name="realsense_mesh" value="/home/andreas/dev_ws/src/kumi/description/mesh/realsense.stl"/>
+    <xacro:property name="mesh_dir" value="file://${kumi_share}/description/mesh"/>
+    <xacro:property name="body_mesh" value="${mesh_dir}/body_v5.STL"/>
+    <xacro:property name="leg_mesh" value="${mesh_dir}/leg_v2.stl"/>
+    <xacro:property name="foot_mesh" value="${mesh_dir}/piedino_v3.STL"/>
+    <xacro:property name="realsense_mesh" value="${mesh_dir}/realsense.stl"/>
     
 
     <link name="body">
@@ -153,16 +154,43 @@
         </sensor>
     </gazebo>
 
-    <joint name="front_ank" type="revolute">
+    <joint name="front_ank_y" type="revolute">
         <origin xyz="0 0 ${-leg_len}" rpy="0 0 0"/>
         <parent link="front_leg"/>
-        <child link="front_foot"/>
+        <child link="front_foot_dummy"/>
         <axis xyz="0 -1 0"/>
         <limit lower="${-2*pi}" upper="${2*pi}" velocity="5" effort="1000"/>
         <dynamics damping="0.1" friction="${joint_friction}"/>
     </joint>
 
-    <gazebo reference="front_ank">
+    <gazebo reference="front_ank_y">
+        <sensor name="front_ank_force_torque" type="force_torque">
+            <always_on>true</always_on>
+            <update_rate>500</update_rate>
+            <force_torque>
+                <frame>child</frame>
+                <measure_direction>child_to_parent</measure_direction>
+            </force_torque>
+        </sensor>
+    </gazebo>
+
+    <link name="front_foot_dummy">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.001"/>
+            <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+        </inertial>
+    </link>
+    <joint name="front_ank_z" type="revolute">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="front_foot_dummy"/>
+        <child link="front_foot"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="${-0.1*pi}" upper="${0.1*pi}" velocity="5" effort="1000"/>
+        <dynamics damping="0.1" friction="${joint_friction}"/>
+    </joint>
+
+    <gazebo reference="front_ank_z">
         <sensor name="front_ank_force_torque" type="force_torque">
             <always_on>true</always_on>
             <update_rate>500</update_rate>
@@ -175,7 +203,7 @@
 
     <link name="front_foot">
         <visual>
-            <origin xyz="0 0 0" rpy="${pi/2} 0  ${-pi/2}"/>
+            <origin xyz="0 -0.007 0" rpy="${pi/2} 0  ${-pi/2}"/>
             <geometry>
                 <mesh filename="${foot_mesh}" scale="${mesh_scale}"/>
             </geometry>
@@ -183,7 +211,7 @@
                 <color rgba="0 1 0 0.8"/>
             </material>
         </visual>
-        <collision>
+        <collision name="frontFootCollision">
             <origin xyz="0 0 0" rpy="${pi/2} 0  ${-pi/2}"/>
             <geometry>
                 <mesh filename="${foot_mesh}" scale="${mesh_scale}"/>
@@ -239,17 +267,45 @@
         </inertial>
     </link>
 
-    <joint name="rear_ank" type="revolute">
+    <joint name="rear_ank_y" type="revolute">
         <origin xyz="0 0 ${-leg_len}" rpy="0 0 0"/>
         <parent link="rear_leg"/>
-        <child link="rear_foot"/>
+        <child link="rear_foot_dummy"/>
         <axis xyz="0 1 0"/>
         <limit lower="${-2*pi}" upper="${2*pi}" velocity="5" effort="1000"/>
         <dynamics damping="0.1" friction="${joint_friction}"/>
     </joint>
 
-    <gazebo reference="rear_ank">
+    <gazebo reference="rear_ank_y">
         <sensor name="rear_ank_force_torque" type="force_torque">
+            <always_on>true</always_on>
+            <update_rate>500</update_rate>
+            <force_torque>
+                <frame>child</frame>
+                <measure_direction>child_to_parent</measure_direction>
+            </force_torque>
+        </sensor>
+    </gazebo>
+
+    <link name="rear_foot_dummy">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.001"/>
+            <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5"/>
+        </inertial>
+    </link>
+
+    <joint name="rear_ank_z" type="revolute">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="rear_foot_dummy"/>
+        <child link="rear_foot"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="${-0.1*pi}" upper="${0.1*pi}" velocity="5" effort="1000"/>
+        <dynamics damping="0.1" friction="${joint_friction}"/>
+    </joint>
+
+    <gazebo reference="rear_ank_z">
+        <sensor name="front_ank_force_torque" type="force_torque">
             <always_on>true</always_on>
             <update_rate>500</update_rate>
             <force_torque>
@@ -261,7 +317,7 @@
 
     <link name="rear_foot">
         <visual>
-            <origin xyz="0 0 0" rpy="${pi/2} 0  ${pi/2}"/>
+            <origin xyz="0 0.007 0" rpy="${pi/2} 0  ${pi/2}"/>
             <geometry>
                 <mesh filename="${foot_mesh}" scale="${mesh_scale}"/>
             </geometry>
@@ -269,7 +325,7 @@
                 <color rgba="1 0 0 0.8"/>
             </material>
         </visual>
-        <collision>
+        <collision name="rearFootCollision">
             <origin xyz="0 0 0" rpy="${pi/2} 0  ${pi/2}"/>
             <geometry>
                 <mesh filename="${foot_mesh}" scale="${mesh_scale}"/>

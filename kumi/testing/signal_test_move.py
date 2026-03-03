@@ -3,12 +3,15 @@ import numpy as np
 from rclpy.node import Node
 from std_msgs.msg import String
 from rclpy.duration import Duration
+from pathlib import Path
+from ament_index_python.packages import get_package_share_directory
 
 class test_move(Node):
     def __init__(self):
         super().__init__('test_move')
 
-        self.sequence_file_path = "/home/andreas/dev_ws/src/kumi/resource/test_move.csv"
+        pkg_share = Path(get_package_share_directory('kumi'))
+        self.sequence_file_path = str(pkg_share / 'resource/test_move.csv')
         self.sender_period = 0.5
         self.publish_duration = Duration(seconds=2.0)
 
