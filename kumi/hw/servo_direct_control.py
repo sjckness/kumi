@@ -1,25 +1,64 @@
-import time
+#!/usr/bin/env python3
+
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import Float32
 import pigpio
 
-GPIO = 18  # pin segnale
 
-pi = pigpio.pi()
-if not pi.connected:
-    raise RuntimeError("pigpiod non è attivo. Avvia: sudo systemctl start pigpiod")
+class ServoNode(Node):
 
-def angle_to_pulsewidth(angle: float) -> int:
-    # tipico servo: 0°=500us, 180°=2500us (a volte 1000-2000us)
-    angle = max(0.0, min(180.0, angle))
-    return int(500 + (angle / 180.0) * 2000)
+    def __init__(self):
+        super().__init__('servo_node')
 
-try:
-    for a in [0, 45, 90, 135, 180, 90]:
-        pw = angle_to_pulsewidth(a)
-        pi.set_servo_pulsewidth(GPIO, pw)
-        time.sleep(0.7)
+        self.GPIO = 18
 
-    # ferma il servo (niente impulsi)
-    pi.set_servo_pulsewidth(GPIO, 0)
+        # Connessione a pigpio daemon
+        self.pi = pigpio.pi()
+        if not self.pi.connected:
+            raise RuntimeError(
+                "pigpiod non è attivo. Avvia: sudo systemctl start pigpiod"
+            )
 
-finally:
-    pi.stop()
+        # Subscriber
+        self.subscription = self.create_subscription(
+            Float32,
+            'servo_angle',
+            self.angle_callback,
+            10
+        )
+
+        self.get_logger().info("Servo node avviato. In ascolto su /servo_angle")
+
+    def angle_to_pulsewidth(self, angle: float) -> int:
+        angle = max(0.0, min(180.0, angle))
+        return int(500 + (angle / 180.0) * 2000)
+
+    def angle_callback(self, msg: Float32):
+        angle = msg.data
+        pulsewidth = self.angle_to_pulsewidth(angle)
+        self.pi.set_servo_pulsewidth(self.GPIO, pulsewidth)
+
+        self.get_logger().info(f"Servo spostato a {angle:.1f}°")
+
+    def destroy_node(self):
+        # Stop servo signal
+        self.pi.set_servo_pulsewidth(self.GPIO, 0)
+        self.pi.stop()
+        super().destroy_node()
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = ServoNode()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
