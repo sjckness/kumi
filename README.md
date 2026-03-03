@@ -1,26 +1,13 @@
-# kumi (aka Bruno)
-ros2 + gazebo model and control
-
-
-## Issues / ToDo  
-
-
-## Warnings
-(+) no real time kernel
-
-## Solved issues (not updated)
-(+++) (1)controller_manager not working             15/07    
-(+++) (2)joint_trajectory_controller not loaded     21/07  
-(+++) (3)control the joint via python script        22/07  
-(+++) (4)robot goes around without permission!      27/08  
-(++)  (5)configure IMU plugin                       29/08 
-(++)  (6)configured effort controller               06/09
-
-## About
+# KUMI (aka Bruno)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?) 
 ![ROS](https://img.shields.io/badge/ROS-2_Jazzy-22314E?logo=ros)
 ![Gazebo](https://img.shields.io/badge/Gazebo-Harmonic_8.9-6C3AB2?logo=gazebo)
 
+## Table of content
+[Vai a Installazione](#install)
+
+## install
+[ROS2 Jazzy installation](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html)
 ## launch
 in /dev_ws  
 ```bash

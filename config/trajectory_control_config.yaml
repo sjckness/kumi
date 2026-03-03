@@ -8,7 +8,7 @@ controller_manager:
       update_rate: 10
     multi_joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
-      update_rate: 100
+      update_rate: 1000
 
 multi_joint_trajectory_controller:
   ros__parameters:

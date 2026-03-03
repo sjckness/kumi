@@ -21,10 +21,13 @@ class CSVJointTrajectory(Node):
         )
 
         # Joint names
-        self.joint_names = ['front_sh', 'front_ank', 'rear_sh', 'rear_ank']
+        self.joint_names = [
+            'front_sh', 'front_ank_y', 'front_ank_z',
+            'rear_sh', 'rear_ank_y', 'rear_ank_z'
+        ]
 
         pkg_share = Path(get_package_share_directory('kumi'))
-        default_csv = pkg_share / 'resource/demo_flip.csv'
+        default_csv = pkg_share / 'resource/demo_flip_v2.csv'
 
         # consenti override via parametro ROS o argomento esplicito
         self.declare_parameter('csv_path', str(default_csv))
@@ -41,8 +44,8 @@ class CSVJointTrajectory(Node):
 
         self.index = 0
 
-        # 🔔 TIMER: 0.5 Hz = periodo 2.0 secondi
-        self.timer = self.create_timer(2.0, self.timer_callback)
+        # 🔔 TIMER: 5 Hz = periodo 0.2 secondi
+        self.timer = self.create_timer(0.1, self.timer_callback)
 
     def load_csv_in_radians(self, path):
         positions = []
@@ -74,7 +77,7 @@ class CSVJointTrajectory(Node):
 
         # ⏱ tempo target per il controller
         # Puoi lasciare 0.5s come prima, o metterlo a 2.0s
-        point.time_from_start = Duration(sec=0, nanosec=500_000_000)
+        point.time_from_start = Duration(sec=0, nanosec=50_000_000)
 
         traj.points.append(point)
 
