@@ -1,68 +1,56 @@
 #!/usr/bin/env python3
-
 import rclpy
 from rclpy.node import Node
-from rcl_interfaces.msg import SetParametersResult
-from std_msgs.msg import Float32
-from gpiozero import Servo
+
+import pigpio
 
 
-class ServoNode(Node):
+class ServoSet45Node(Node):
     def __init__(self):
-        super().__init__('servo_node')
+        super().__init__('servo_set_45_node')
 
-        self.gpio = 18  # GPIO BCM
-        # min_pulse_width / max_pulse_width tipici; puoi aggiustarli
-        self.servo = Servo(self.gpio, min_pulse_width=0.5/1000, max_pulse_width=2.5/1000)
+        # Parametri (così puoi cambiarli da launch/CLI)
+        self.declare_parameter('gpio', 18)     # BCM
+        self.declare_parameter('angle', 45.0)  # gradi
+        self.declare_parameter('min_deg', 0.0)
+        self.declare_parameter('max_deg', 180.0)
+        self.declare_parameter('min_us', 500)   # tipico: 500..2500 (a volte 1000..2000)
+        self.declare_parameter('max_us', 2500)
 
-        # Parametro per posizione target (gradi 0..180)
-        self.declare_parameter('target_angle_deg', 90.0)
-        target_angle = float(self.get_parameter('target_angle_deg').value)
-        self._set_servo(target_angle)
-        self.get_logger().info(f"Servo inizializzato a {target_angle:.1f}° (parametro target_angle_deg)")
+        gpio = int(self.get_parameter('gpio').value)
+        angle = float(self.get_parameter('angle').value)
+        min_deg = float(self.get_parameter('min_deg').value)
+        max_deg = float(self.get_parameter('max_deg').value)
+        min_us = int(self.get_parameter('min_us').value)
+        max_us = int(self.get_parameter('max_us').value)
 
-        # Consenti aggiornamenti runtime del parametro
-        self.add_on_set_parameters_callback(self._on_param_change)
+        # Connetti pigpio daemon
+        self.pi = pigpio.pi()
+        if not self.pi.connected:
+            raise RuntimeError("pigpiod non è attivo. Avvia: sudo systemctl start pigpiod")
 
-        self.sub = self.create_subscription(Float32, 'servo_angle', self.cb, 10)
-        self.get_logger().info("Servo node avviato su /servo_angle (Float32 gradi 0..180)")
+        # Clamp + map angle -> pulsewidth
+        angle = max(min_deg, min(max_deg, angle))
+        span_deg = (max_deg - min_deg) if (max_deg - min_deg) != 0 else 1.0
+        t = (angle - min_deg) / span_deg
+        us = int(min_us + t * (max_us - min_us))
 
-    def cb(self, msg: Float32):
-        angle = self._set_servo(msg.data)
+        self.pi.set_servo_pulsewidth(gpio, us)
+        self.get_logger().info(f"Servo su GPIO {gpio} impostato a {angle:.1f}° ({us} us).")
 
-        self.get_logger().info(f"Angle: {angle:.1f} deg")
+        # nodo “one-shot”: aspetta un attimo e poi si chiude
+        self.timer = self.create_timer(1.0, self._shutdown)
 
-    def _set_servo(self, angle_deg: float) -> float:
-        angle = max(0.0, min(180.0, float(angle_deg)))
-        # gpiozero Servo.value è [-1..+1]
-        self.servo.value = (angle / 90.0) - 1.0
-        return angle
-
-    def _on_param_change(self, params):
-        for p in params:
-            if p.name == 'target_angle_deg':
-                new_angle = self._set_servo(p.value)
-                self.get_logger().info(f"Servo portato a {new_angle:.1f}° da parametro")
-        return SetParametersResult(successful=True)
-
-    def destroy_node(self):
-        try:
-            self.servo.detach()  # smette di generare PWM
-        except Exception:
-            pass
-        super().destroy_node()
+    def _shutdown(self):
+        # se vuoi lasciare il servo “tenuto”, NON mettere pulsewidth a 0
+        self.pi.stop()
+        rclpy.shutdown()
 
 
 def main(args=None):
     rclpy.init(args=args)
-    node = ServoNode()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
+    node = ServoSet45Node()
+    rclpy.spin(node)
 
 
 if __name__ == '__main__':
