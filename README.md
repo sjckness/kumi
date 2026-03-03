@@ -16,7 +16,7 @@
 
 [Foxglove](#foxglove)
 
-## Install
+## Installation
 [ROS2 Jazzy installation guide](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html)
 
 [Gazebo Harmonic 8.9 installation guide](https://gazebosim.org/docs/harmonic/install_ubuntu/)
