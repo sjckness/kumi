@@ -1,7 +1,7 @@
 # KUMI (aka Bruno)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?) 
 ![ROS](https://img.shields.io/badge/ROS-2_Jazzy-22314E?logo=ros)
-![Gazebo](https://img.shields.io/badge/Gazebo-Harmonic_8.9-6C3AB2?logo=gazebo)
+![Gazebo](https://img.shields.io/badge/Gazebo-Harmonic_8.10-6C3AB2?logo=gazebo)
 
 ## Table of content
 [Installation](#install)

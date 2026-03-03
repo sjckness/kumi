@@ -1,3 +1,4 @@
+import os
 from setuptools import find_packages, setup
 from glob import glob
 
@@ -26,6 +27,13 @@ setup(
 
         # Worlds (for Gazebo)
         (f'share/{package_name}/worlds', glob('worlds/*')),
+
+        # Models (for Gazebo)
+        (f'share/{package_name}/models', glob('model/*')),
+
+        # Meshes (for Gazebo)
+        (f'share/{package_name}/meshes', glob('meshe/*')),
+
 
         # CSV and other resources
         (f'share/{package_name}/resource', glob('resource/*')),

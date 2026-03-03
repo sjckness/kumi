@@ -2,10 +2,10 @@
 ---
 controller_manager:
   ros__parameters:
-    update_rate: 100
+    update_rate: 1000
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
-      update_rate: 10
+      update_rate: 100
     multi_joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
       update_rate: 1000

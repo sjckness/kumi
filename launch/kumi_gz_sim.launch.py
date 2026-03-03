@@ -15,7 +15,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
 
-    world_name = 'empty'
+    world_name = 'robot_gym_fuel'
     screenOn = ' '
     screenOff = ' -s '
 
@@ -28,14 +28,23 @@ def generate_launch_description():
 
     pkg_share = get_package_share_directory('kumi')
 
+    world_path = os.path
+
+    # Mantiene le risorse di default di Gazebo e aggiunge quelle del pacchetto
+    existing = os.environ.get('GZ_SIM_RESOURCE_PATH', '')
+
+    resource_paths = [
+        existing,
+        pkg_share,                             # base share/kumi
+        os.path.join(pkg_share, 'models'),
+        os.path.join(pkg_share, 'worlds'),
+        os.path.join(pkg_share, 'description'),
+        os.path.join(pkg_share, 'description', 'mesh'),
+    ]
+
     gazebo_resource_path = SetEnvironmentVariable(
         name='GZ_SIM_RESOURCE_PATH',
-        # include worlds and meshes so package://kumi/... resolves inside Gazebo Sim
-        value=":".join([
-            os.path.join(pkg_share, 'worlds'),
-            os.path.join(pkg_share, 'description'),
-            os.path.join(pkg_share, 'description', 'mesh'),
-        ])
+        value=":".join([p for p in resource_paths if p])
     )
 
     arguments = LaunchDescription([
@@ -66,7 +75,7 @@ def generate_launch_description():
         launch_arguments={
             'gz_args': PythonExpression([
                 "'",
-                LaunchConfiguration('world'),
+                world_path,
                 ".sdf -v 4 -r'"
             ])
         }.items()
