@@ -4,82 +4,74 @@ from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
+from launch.actions import (
+    DeclareLaunchArgument,
+    ExecuteProcess,
+    IncludeLaunchDescription,
+    AppendEnvironmentVariable,
+    TimerAction,
+)
 from launch.actions import RegisterEventHandler, SetEnvironmentVariable
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.substitutions import LaunchConfiguration, PythonExpression, TextSubstitution, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
 
-    world_name = 'robot_gym_fuel'
-    screenOn = ' '
-    screenOff = ' -s '
-
+    world_name = 'stairs'
 
     # Launch Arguments
     use_sim_time = LaunchConfiguration('use_sim_time', default=True)
-
-    pkg_share= os.path.join(
-        get_package_share_directory('kumi'))
+    gz_start_delay = DeclareLaunchArgument(
+        'gz_start_delay',
+        default_value='5.0',
+        description='Seconds to let Gazebo start before launching bridges and nodes'
+    )
+    world_load_delay = DeclareLaunchArgument(
+        'world_load_delay',
+        default_value='3.0',
+        description='Extra seconds to wait for the world to settle before spawning the robot'
+    )
 
     pkg_share = get_package_share_directory('kumi')
 
-    world_path = os.path
-
-    # Mantiene le risorse di default di Gazebo e aggiunge quelle del pacchetto
-    existing = os.environ.get('GZ_SIM_RESOURCE_PATH', '')
-
-    resource_paths = [
-        existing,
-        pkg_share,                             # base share/kumi
-        os.path.join(pkg_share, 'models'),
-        os.path.join(pkg_share, 'worlds'),
-        os.path.join(pkg_share, 'description'),
-        os.path.join(pkg_share, 'description', 'mesh'),
+    # absolute path to the folder that contains the world sdf files
+    gz_env = [
+        AppendEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=pkg_share, separator=':'),
+        AppendEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=os.path.join(pkg_share, 'models'), separator=':'),
+        AppendEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=os.path.join(pkg_share, 'worlds'), separator=':'),
+        AppendEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=os.path.join(pkg_share, 'description'), separator=':'),
+        AppendEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=os.path.join(pkg_share, 'description', 'mesh'), separator=':'),
     ]
 
-    gazebo_resource_path = SetEnvironmentVariable(
-        name='GZ_SIM_RESOURCE_PATH',
-        value=":".join([p for p in resource_paths if p])
+    world_arg = DeclareLaunchArgument(
+        'world',
+        default_value=TextSubstitution(text=world_name),
+        description='World name (without .sdf) located in kumi/worlds'
     )
-
-    arguments = LaunchDescription([
-                DeclareLaunchArgument('world', default_value=world_name,     #name of the world.sdf file in /worlds folder
-                          description='Gz sim World'),
-           ]
-    )
-
-    gazebo = IncludeLaunchDescription(
-                PythonLaunchDescriptionSource([os.path.join(
-                    get_package_share_directory('ros_gz_sim'), 'launch'), '/gz_sim.launch.py']),
-                launch_arguments=[
-                    ('gz_args', [LaunchConfiguration('world'),
-                                 '.sdf',
-                                 ' -v 5',
-                                 screenOff,
-                                 '-r']
-                    )
-                ]
-             )
     
-    pkg_ros_gz_sim = FindPackageShare('ros_gz_sim').find('ros_gz_sim')
+    world_file = PathJoinSubstitution([
+        FindPackageShare('kumi'),
+        'worlds',
+        LaunchConfiguration('world')
+    ])
 
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_ros_gz_sim, 'launch', 'gz_sim.launch.py')
+            os.path.join(
+                FindPackageShare('ros_gz_sim').find('ros_gz_sim'),
+                'launch',
+                'gz_sim.launch.py'
+            )
         ),
         launch_arguments={
-            'gz_args': PythonExpression([
-                "'",
-                world_path,
-                ".sdf -v 4 -r'"
-            ])
+            # passiamo il PATH ASSOLUTO + estensione
+            'gz_args': [world_file, TextSubstitution(text='.sdf'), TextSubstitution(text=' -v 5 -r')]
         }.items()
-    )
+    )  
     
     xacro_file = os.path.join(pkg_share,
                               'description',
@@ -116,8 +108,9 @@ def generate_launch_description():
         package='ros_gz_sim',
         executable='create',
         output='screen',
-        arguments=['-string', robot_desc,
-                   '-x', '-1.0',
+        arguments=['-world', LaunchConfiguration('world'),
+                   '-string', robot_desc,
+                   '-x', '-0.15',
                    '-y', '0.0',
                    '-z', '0.5',     #spawn at .5 meters from the ground
                    '-R', '0.0',
@@ -224,25 +217,41 @@ def generate_launch_description():
         output='screen'
     )
 
-    return LaunchDescription([
-        gazebo_resource_path,
-        arguments,
-        #gazebo,
-        gz_sim,
-        bridge,
-        node_robot_state_publisher,
-        gz_spawn_entity,
-        #foxglove_bridge,
-        load_joint_state_broadcaster,
-        load_joint_trajectory_controller,
-        #depth_to_scan,
-        #front_distance,
-        #load_joint_effort_controller,
-        #trajectory_controller,
-        #pid_effort_controller
-        #com_calculator,
-    ]
+    # Timers to give Gazebo time to open and the world to load before spawning the robot.
+    delayed_spawn_and_controllers = TimerAction(
+        period=LaunchConfiguration('world_load_delay'),
+        actions=[
+            gz_spawn_entity,
+            load_joint_state_broadcaster,
+            load_joint_trajectory_controller,
+            # Uncomment if/when you need them after spawn
+            #load_joint_effort_controller,
+            #trajectory_controller,
+            #pid_effort_controller,
+        ],
     )
+
+    delayed_nodes = TimerAction(
+        period=LaunchConfiguration('gz_start_delay'),
+        actions=[
+            bridge,
+            node_robot_state_publisher,
+            #foxglove_bridge,
+            #depth_to_scan,
+            #front_distance,
+            #com_calculator,
+            delayed_spawn_and_controllers,
+        ],
+    )
+
+    return LaunchDescription([
+        *gz_env,
+        world_arg,
+        gz_start_delay,
+        world_load_delay,
+        gz_sim,
+        delayed_nodes,
+    ])
 
 
 

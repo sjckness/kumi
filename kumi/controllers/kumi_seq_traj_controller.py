@@ -78,7 +78,7 @@ class CSVJointTrajectory(Node):
         point.positions = positions
 
         #tempo target per il controller
-        point.time_from_start = Duration(sec=0, nanosec=2_500_000)
+        point.time_from_start = Duration(sec=0, nanosec=20_000_000)
 
         traj.points.append(point)
 

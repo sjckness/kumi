@@ -1,0 +1,17 @@
+[console_scripts]
+PID_effort_controller = kumi.controllers.PID_effort_controller:main
+bt = kumi.behaviors.behavior_tree:main
+com_calculator = kumi.phisics.com_calculator:main
+console_input = kumi.testing.console_input:main
+front_distance = kumi.stereocamera.front_distance:main
+hard_reset = kumi.testing.hard_reset:main
+kumi_seq_traj_controller = kumi.controllers.kumi_seq_traj_controller:main
+kumi_seq_traj_controller_keyboard = kumi.controllers.kumi_seq_traj_controller_keyboard:main
+kumi_signal_bringup = kumi.matlab_interface.kumi_signal_bringup:main
+kumi_single_move = kumi.matlab_interface.single_move:main
+kumi_trajectory_controller = kumi.controllers.kumi_trajectory_controller:main
+orientation = kumi.phisics.orientation:main
+publish_active = kumi.testing.publish_active:main
+real_imu = kumi.external.real_imu:main
+reset = kumi.matlab_interface.reset:main
+test_move = kumi.testing.test_move:main

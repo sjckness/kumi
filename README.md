@@ -54,6 +54,16 @@ Is also possible to use a version that send a point every time you press 'SPACE'
 ros2 run kumi kumi_seq_traj_controller_keyboard
 ```
 
+## worlds
+In order to try different worlds is now possible to select it when launching the simulation by setting the 'world' parameter:
+```bash
+ros2 launch kumi kumi_gz_sim.launch.py world:=world_name
+```
+Worlds available in the package kumi:
+- my_empty 
+- stairs
+- simple_tunnel_01
+
 ## Commands
 to kill gazebo:
 ```bash

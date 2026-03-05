@@ -1,8 +1,25 @@
 import os
-from setuptools import find_packages, setup
 from glob import glob
+from pathlib import Path
+from setuptools import find_packages, setup
 
 package_name = 'kumi'
+base_path = Path(__file__).resolve().parent  # follow symlinks to the real package root
+cwd = Path().resolve()
+
+
+def package_files(directory: str):
+    """Recursively collect data files to preserve directory structure on install."""
+    paths = []
+    root = base_path / directory
+    for (path, _, filenames) in os.walk(root):
+        if not filenames:
+            continue
+        rel = os.path.relpath(path, base_path)
+        dest_dir = os.path.join('share', package_name, rel)
+        src_files = [os.path.relpath(os.path.join(path, f), cwd) for f in filenames]
+        paths.append((dest_dir, src_files))
+    return paths
 
 setup(
     name=package_name,
@@ -11,33 +28,27 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name, [os.path.relpath(base_path / 'package.xml', cwd)]),
         # Launch files
-        (f'share/{package_name}/launch', glob('launch/*.py')),
+        (f'share/{package_name}/launch', [os.path.relpath(p, cwd) for p in glob(str(base_path / 'launch' / '*.py'))]),
 
         # URDF / xacro
-        (f'share/{package_name}/description/', glob('description/*.xacro')),
-        (f'share/{package_name}/description/xacro', glob('description/xacro/*.xacro')),
+        (f'share/{package_name}/description/', [os.path.relpath(p, cwd) for p in glob(str(base_path / 'description' / '*.xacro'))]),
+        (f'share/{package_name}/description/xacro', [os.path.relpath(p, cwd) for p in glob(str(base_path / 'description' / 'xacro' / '*.xacro'))]),
 
         # meshes
-        (f'share/{package_name}/description/mesh/', glob('description/mesh/*')),
+        (f'share/{package_name}/description/mesh/', [os.path.relpath(p, cwd) for p in glob(str(base_path / 'description' / 'mesh' / '*'))]),
         
         # Config files (YAML)
-        (f'share/{package_name}/config', glob('config/*.yaml')),
+        (f'share/{package_name}/config', [os.path.relpath(p, cwd) for p in glob(str(base_path / 'config' / '*.yaml'))]),
 
         # Worlds (for Gazebo)
-        (f'share/{package_name}/worlds', glob('worlds/*')),
-
-        # Models (for Gazebo)
-        (f'share/{package_name}/models', glob('model/*')),
-
-        # Meshes (for Gazebo)
-        (f'share/{package_name}/meshes', glob('meshe/*')),
+        (f'share/{package_name}/worlds', [os.path.relpath(p, cwd) for p in glob(str(base_path / 'worlds' / '*'))]),
 
 
         # CSV and other resources
-        (f'share/{package_name}/resource', glob('resource/*')),
-    ],
+        (f'share/{package_name}/resource', [os.path.relpath(p, cwd) for p in glob(str(base_path / 'resource' / '*'))]),
+    ] + package_files('models') + package_files('meshes'),
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='andreas',
