@@ -19,8 +19,5 @@ multi_joint_trajectory_controller:
     - rear_sh
     - rear_ank_y
     - rear_ank_z
-    state_interfaces:
-    - position
-    - velocity
-    command_interfaces:
-    - position
+    state_interfaces: [ position, velocity ]
+    command_interfaces: [ position ]

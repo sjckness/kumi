@@ -1,4 +1,6 @@
 # KUMI (aka Bruno)
+![Descrizione immagine](assets/kumi.png)
+
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?) 
 ![ROS](https://img.shields.io/badge/ROS-2_Jazzy-22314E?logo=ros)
 ![Gazebo](https://img.shields.io/badge/Gazebo-Harmonic_8.10-6C3AB2?logo=gazebo)
@@ -34,7 +36,7 @@ git clone https://github.com/sjckness/kumi.git
 ## Build
 inside /dev_ws use the following command to build the package (this step is mandatory every time you open a new terminal): 
 ```bash
-source install/setup.bash
+colcon build --simlink-install --package-select kumi
 ```
 Then you have to source the workspace, and now ros knows where your files are. Use:
 ```bash
